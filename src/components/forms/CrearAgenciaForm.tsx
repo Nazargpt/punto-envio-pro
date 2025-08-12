@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Building2, MapPin, Phone, Mail, User, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +20,7 @@ const formSchema = z.object({
   direccion: z.string().min(1, 'La dirección es requerida'),
   provincia_id: z.string().min(1, 'La provincia es requerida'),
   localidad_id: z.string().optional(),
-  nueva_localidad: z.string().min(1, 'El nombre de la localidad es requerido'),
+  nueva_localidad: z.string().optional(),
   codigo_postal: z.string().optional(),
   telefono: z.string().min(1, 'El teléfono es requerido'),
   email: z.string().email('Email inválido'),
@@ -29,6 +30,9 @@ const formSchema = z.object({
   horario_cierre: z.string().min(1, 'El horario de cierre es requerido'),
   tipo_parada: z.boolean().default(false),
   activo: z.boolean().default(true),
+}).refine((data) => data.localidad_id || data.nueva_localidad, {
+  message: "Debe seleccionar una localidad existente o crear una nueva",
+  path: ["localidad_id"],
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -174,10 +178,14 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
     setIsSubmitting(true);
     
     try {
-      // Crear nueva localidad (ahora es obligatorio)
-      const localidadId = await crearNuevaLocalidad(data.nueva_localidad, data.codigo_postal);
-      if (!localidadId) {
-        throw new Error('Error al crear la localidad');
+      let localidadId = data.localidad_id;
+      
+      // Si se está creando una nueva localidad
+      if (data.nueva_localidad && !data.localidad_id) {
+        localidadId = await crearNuevaLocalidad(data.nueva_localidad, data.codigo_postal);
+        if (!localidadId) {
+          throw new Error('Error al crear la localidad');
+        }
       }
 
       // Obtener datos de la provincia y localidad para guardar en la agencia
@@ -301,15 +309,69 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
               <div className="space-y-2">
                 <Label htmlFor="localidad">Localidad *</Label>
                 {provinciaSeleccionada ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setMostrarNuevaLocalidad(!mostrarNuevaLocalidad)}
-                    className="w-full"
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    {mostrarNuevaLocalidad ? 'Cancelar' : 'Agregar Nueva Localidad'}
-                  </Button>
+                  <div className="space-y-2">
+                    <Select onValueChange={handleLocalidadChange} value={watchedValues.localidad_id}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar localidad existente" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg max-h-60 overflow-y-auto z-50">
+                        {localidades.map((localidad) => (
+                          <SelectItem key={localidad.id} value={localidad.id}>
+                            {localidad.nombre}
+                            {localidad.codigo_postal && ` (${localidad.codigo_postal})`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Crear Nueva Localidad
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Crear Nueva Localidad</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            ¿Estás seguro de que quieres crear una nueva localidad? Verifica primero que no exista en la lista.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Nombre de la nueva localidad"
+                            value={watchedValues.nueva_localidad || ''}
+                            onChange={(e) => setValue('nueva_localidad', e.target.value)}
+                          />
+                          <Input
+                            placeholder="Código postal (opcional)"
+                            value={watchedValues.codigo_postal || ''}
+                            onChange={(e) => setValue('codigo_postal', e.target.value)}
+                          />
+                        </div>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel onClick={() => {
+                            setValue('nueva_localidad', '');
+                            setValue('codigo_postal', '');
+                          }}>
+                            Cancelar
+                          </AlertDialogCancel>
+                          <AlertDialogAction onClick={() => {
+                            setValue('localidad_id', '');
+                            setMostrarNuevaLocalidad(true);
+                          }}>
+                            Crear Localidad
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 ) : (
                   <Input
                     disabled
@@ -317,29 +379,13 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
                     className="bg-muted"
                   />
                 )}
+                {errors.localidad_id && (
+                  <p className="text-sm text-destructive">{errors.localidad_id.message}</p>
+                )}
                 {errors.nueva_localidad && (
                   <p className="text-sm text-destructive">{errors.nueva_localidad.message}</p>
                 )}
               </div>
-
-              {mostrarNuevaLocalidad && (
-                <div className="space-y-2">
-                  <Label htmlFor="nueva_localidad">Nueva Localidad *</Label>
-                  <Input
-                    id="nueva_localidad"
-                    placeholder="Nombre de la nueva localidad"
-                    {...register('nueva_localidad')}
-                  />
-                  {errors.nueva_localidad && (
-                    <p className="text-sm text-destructive">{errors.nueva_localidad.message}</p>
-                  )}
-                  <Input
-                    id="codigo_postal"
-                    placeholder="Código postal (opcional)"
-                    {...register('codigo_postal')}
-                  />
-                </div>
-              )}
             </div>
 
             <div className="space-y-2">
