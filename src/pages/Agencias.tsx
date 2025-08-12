@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Building2, Plus, Search, MapPin, Phone, Mail, Users } from 'lucide-react';
+import CrearAgenciaForm from '@/components/forms/CrearAgenciaForm';
 
 const Agencias: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -97,10 +99,17 @@ const Agencias: React.FC = () => {
           </h1>
           <p className="text-muted-foreground">Administra las agencias de la red PuntoEnvío</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Nueva Agencia
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Nueva Agencia
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <CrearAgenciaForm onSuccess={() => window.location.reload()} />
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats Cards */}
