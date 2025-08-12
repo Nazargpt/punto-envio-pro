@@ -39,40 +39,35 @@ const AppHeader: React.FC = () => {
   return (
     <header className="bg-black border-b border-gray-800">
       <div className="px-4 py-2">
-        <div className="flex items-center justify-between w-full">
+        <div className="flex items-center justify-between gap-4">
           {/* Logo */}
           <div className="flex items-center">
             <img src="/lovable-uploads/ee738c9e-a12c-41a3-b383-9a9759cfa8f3.png" alt="PuntoEnvío" className="h-8" />
           </div>
 
-          {/* Center: Navigation Menu and Action Buttons */}
-          <div className="flex items-center gap-1 flex-1 justify-center">
+          {/* Navigation Menu and Action Buttons - All inline */}
+          <div className="flex items-center gap-2">
             {/* Navigation Links */}
-            <div className="hidden xl:flex items-center gap-1">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                
-                return (
-                  <Link key={item.path} to={item.path}>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className={cn(
-                        "h-7 px-2 text-white hover:bg-gray-800 text-xs",
-                        isActive && "bg-gray-800 text-white"
-                      )}
-                    >
-                      <Icon className="mr-1 h-3 w-3" />
-                      {item.title}
-                    </Button>
-                  </Link>
-                );
-              })}
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
               
-              {/* Separator */}
-              <div className="w-px h-4 bg-gray-600 mx-2" />
-            </div>
+              return (
+                <Link key={item.path} to={item.path}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "h-7 px-2 text-white hover:bg-gray-800 text-xs hidden lg:flex",
+                      isActive && "bg-gray-800 text-white"
+                    )}
+                  >
+                    <Icon className="mr-1 h-3 w-3" />
+                    {item.title}
+                  </Button>
+                </Link>
+              );
+            })}
 
             {/* Three colored buttons */}
             <Button 
@@ -80,7 +75,7 @@ const AppHeader: React.FC = () => {
               className="bg-blue-600 hover:bg-blue-700 text-white h-7 px-2 text-xs"
             >
               <Building2 className="mr-1 h-3 w-3" />
-              <span className="hidden lg:inline">Agencias</span>
+              <span className="hidden md:inline">Agencias</span>
             </Button>
             
             <Button 
@@ -88,7 +83,7 @@ const AppHeader: React.FC = () => {
               className="bg-orange-600 hover:bg-orange-700 text-white h-7 px-2 text-xs"
             >
               <Truck className="mr-1 h-3 w-3" />
-              <span className="hidden lg:inline">Transportistas</span>
+              <span className="hidden md:inline">Transportistas</span>
             </Button>
             
             <Button 
@@ -96,7 +91,7 @@ const AppHeader: React.FC = () => {
               className="bg-green-600 hover:bg-green-700 text-white h-7 px-2 text-xs"
             >
               <Shield className="mr-1 h-3 w-3" />
-              <span className="hidden lg:inline">Admin</span>
+              <span className="hidden md:inline">Admin</span>
             </Button>
           </div>
 
