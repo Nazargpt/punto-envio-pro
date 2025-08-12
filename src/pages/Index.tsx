@@ -1,9 +1,13 @@
 import React from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Truck, Users, TrendingUp, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Package, Truck, CheckCircle, Clock } from 'lucide-react';
 
 const Index = () => {
+  const { user, loading } = useAuth();
+
   const stats = [
     {
       title: "Órdenes Hoy",
@@ -51,6 +55,54 @@ const Index = () => {
       default: return 'text-gray-600 bg-gray-50';
     }
   };
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="text-center space-y-6 max-w-lg">
+            <div className="space-y-2">
+              <h1 className="text-3xl font-bold">Bienvenido a PuntoEnvío</h1>
+              <p className="text-muted-foreground">
+                Sistema integral de gestión de cargas y logística
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="space-y-2">
+                <Package className="h-8 w-8 mx-auto text-primary" />
+                <p className="font-medium">Gestión de Órdenes</p>
+              </div>
+              <div className="space-y-2">
+                <Truck className="h-8 w-8 mx-auto text-primary" />
+                <p className="font-medium">Hojas de Ruta</p>
+              </div>
+              <div className="space-y-2">
+                <CheckCircle className="h-8 w-8 mx-auto text-primary" />
+                <p className="font-medium">Control de Calidad</p>
+              </div>
+              <div className="space-y-2">
+                <Clock className="h-8 w-8 mx-auto text-primary" />
+                <p className="font-medium">Seguimiento</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Inicia sesión para acceder al sistema
+            </p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
