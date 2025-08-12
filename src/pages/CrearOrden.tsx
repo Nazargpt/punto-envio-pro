@@ -31,6 +31,7 @@ const ordenSchema = z.object({
   diaRecoleccion: z.string().min(1, 'Día de recolección es requerido'),
   horaRecoleccion: z.string().min(1, 'Hora de recolección es requerida'),
   tipoRecoleccion: z.enum(['domicilio', 'agencia']),
+  agenciaOrigenId: z.string().optional(),
   
   // Destinatario
   destinatarioNombre: z.string().min(1, 'Nombre es requerido'),
@@ -55,6 +56,7 @@ type OrdenFormData = z.infer<typeof ordenSchema>;
 
 const CrearOrden = () => {
   const [agenciasDestino, setAgenciasDestino] = useState<Agencia[]>([]);
+  const [agenciasOrigen, setAgenciasOrigen] = useState<Agencia[]>([]);
   const [cargandoAgencias, setCargandoAgencias] = useState(false);
 
   const form = useForm<OrdenFormData>({
@@ -65,11 +67,13 @@ const CrearOrden = () => {
     },
   });
 
-  // Watch para detectar cambios en la localidad del destinatario y tipo de entrega
+  // Watch para detectar cambios en las localidades y tipos de entrega/recolección
   const tipoEntrega = form.watch('tipoEntrega');
+  const tipoRecoleccion = form.watch('tipoRecoleccion');
   const destinatarioLocalidad = form.watch('destinatarioLocalidad');
+  const remitenteLocalidad = form.watch('remitenteLocalidad');
 
-  // Cargar agencias cuando se selecciona entrega en agencia y hay localidad
+  // Cargar agencias de destino cuando se selecciona entrega en agencia y hay localidad
   useEffect(() => {
     if (tipoEntrega === 'agencia' && destinatarioLocalidad) {
       cargarAgenciasDestino(destinatarioLocalidad);
@@ -78,6 +82,16 @@ const CrearOrden = () => {
       form.setValue('agenciaDestinoId', '');
     }
   }, [tipoEntrega, destinatarioLocalidad, form]);
+
+  // Cargar agencias de origen cuando se selecciona recolección en agencia y hay localidad
+  useEffect(() => {
+    if (tipoRecoleccion === 'agencia' && remitenteLocalidad) {
+      cargarAgenciasOrigen(remitenteLocalidad);
+    } else {
+      setAgenciasOrigen([]);
+      form.setValue('agenciaOrigenId', '');
+    }
+  }, [tipoRecoleccion, remitenteLocalidad, form]);
 
   const cargarAgenciasDestino = async (localidad: string) => {
     setCargandoAgencias(true);
@@ -97,6 +111,29 @@ const CrearOrden = () => {
     } catch (error) {
       console.error('Error:', error);
       setAgenciasDestino([]);
+    } finally {
+      setCargandoAgencias(false);
+    }
+  };
+
+  const cargarAgenciasOrigen = async (localidad: string) => {
+    setCargandoAgencias(true);
+    try {
+      const { data, error } = await supabase
+        .from('agencias')
+        .select('id, nombre, direccion')
+        .eq('localidad', localidad)
+        .eq('activo', true);
+
+      if (error) {
+        console.error('Error cargando agencias origen:', error);
+        setAgenciasOrigen([]);
+      } else {
+        setAgenciasOrigen(data || []);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setAgenciasOrigen([]);
     } finally {
       setCargandoAgencias(false);
     }
@@ -288,7 +325,7 @@ const CrearOrden = () => {
                             </div>
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem value="agencia" id="recoleccion-agencia" />
-                              <Label htmlFor="recoleccion-agencia">Entrega en Agencia cercana</Label>
+                              <Label htmlFor="recoleccion-agencia">Entrega en agencia cercana</Label>
                             </div>
                           </RadioGroup>
                         </FormControl>
@@ -296,6 +333,47 @@ const CrearOrden = () => {
                       </FormItem>
                     )}
                   />
+
+                  {/* Selector de Agencia de Origen */}
+                  {tipoRecoleccion === 'agencia' && (
+                    <FormField
+                      control={form.control}
+                      name="agenciaOrigenId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Agencia de Origen</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue 
+                                  placeholder={
+                                    cargandoAgencias 
+                                      ? "Cargando agencias..." 
+                                      : agenciasOrigen.length === 0 
+                                        ? "No hay agencias disponibles en esta localidad"
+                                        : "Seleccionar agencia"
+                                  } 
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {agenciasOrigen.map((agencia) => (
+                                <SelectItem key={agencia.id} value={agencia.id}>
+                                  {agencia.nombre} - {agencia.direccion}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                          {!remitenteLocalidad && tipoRecoleccion === 'agencia' && (
+                            <p className="text-sm text-muted-foreground">
+                              Primero ingrese la localidad del remitente
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </CardContent>
               </Card>
 
@@ -486,10 +564,7 @@ const CrearOrden = () => {
                             <SelectContent>
                               {agenciasDestino.map((agencia) => (
                                 <SelectItem key={agencia.id} value={agencia.id}>
-                                  <div className="flex flex-col">
-                                    <span className="font-medium">{agencia.nombre}</span>
-                                    <span className="text-sm text-muted-foreground">{agencia.direccion}</span>
-                                  </div>
+                                  {agencia.nombre} - {agencia.direccion}
                                 </SelectItem>
                               ))}
                             </SelectContent>
