@@ -100,7 +100,8 @@ const Seguimiento = () => {
     buscarOrden();
   };
 
-  const formatFecha = (fecha: string) => {
+  const formatFecha = (fecha: string | null) => {
+    if (!fecha) return 'No especificado';
     return new Date(fecha).toLocaleDateString('es-AR', {
       year: 'numeric',
       month: 'long',
@@ -108,7 +109,8 @@ const Seguimiento = () => {
     });
   };
 
-  const formatHora = (hora: string) => {
+  const formatHora = (hora: string | null) => {
+    if (!hora) return 'No especificado';
     return hora.slice(0, 5); // HH:MM
   };
 
@@ -214,12 +216,15 @@ const Seguimiento = () => {
                       {orden.tipo_recoleccion === 'domicilio' ? 'Retiro de domicilio' : 'Entrega en agencia'}
                     </p>
                   </div>
-                  <div>
-                    <Label className="text-sm font-medium">Fecha y Hora de Recolección</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {formatFecha(orden.fecha_recoleccion)} - {formatHora(orden.hora_recoleccion)}
-                    </p>
-                  </div>
+                   <div>
+                     <Label className="text-sm font-medium">Fecha y Hora de Recolección</Label>
+                     <p className="text-sm text-muted-foreground">
+                       {orden.fecha_recoleccion && orden.hora_recoleccion 
+                         ? `${formatFecha(orden.fecha_recoleccion)} - ${formatHora(orden.hora_recoleccion)}`
+                         : 'Fecha y hora a coordinar'
+                       }
+                     </p>
+                   </div>
                 </CardContent>
               </Card>
 
@@ -251,15 +256,46 @@ const Seguimiento = () => {
                       {orden.tipo_entrega === 'domicilio' ? 'Entrega a domicilio' : 'Retiro en agencia'}
                     </p>
                   </div>
-                  <div>
-                    <Label className="text-sm font-medium">Fecha y Hora de Entrega</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {formatFecha(orden.fecha_entrega)} - {formatHora(orden.hora_entrega)}
-                    </p>
-                  </div>
+                   <div>
+                     <Label className="text-sm font-medium">Fecha y Hora de Entrega</Label>
+                     <p className="text-sm text-muted-foreground">
+                       {orden.fecha_entrega && orden.hora_entrega 
+                         ? `${formatFecha(orden.fecha_entrega)} - ${formatHora(orden.hora_entrega)}`
+                         : 'Fecha y hora a coordinar'
+                       }
+                     </p>
+                   </div>
                 </CardContent>
               </Card>
             </div>
+
+            {/* Información adicional */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Información Adicional
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium">ID de Orden</Label>
+                    <p className="text-sm text-muted-foreground font-mono">{orden.id}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Estado Actual</Label>
+                    <Badge className={estadosColores[orden.estado as keyof typeof estadosColores]}>
+                      {estadosTexto[orden.estado as keyof typeof estadosTexto]}
+                    </Badge>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Fecha de Creación</Label>
+                    <p className="text-sm text-muted-foreground">{formatFecha(orden.created_at)}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Timeline de estados */}
             <Card>
@@ -270,48 +306,141 @@ const Seguimiento = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${orden.estado === 'pendiente' ? 'bg-yellow-500' : 'bg-gray-300'}`} />
-                    <span className="text-sm">Orden creada - Pendiente de recolección</span>
-                    {orden.estado === 'pendiente' && (
-                      <Badge className="bg-yellow-100 text-yellow-800">Actual</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${['recolectado', 'en_transito', 'en_destino', 'entregado'].includes(orden.estado) ? 'bg-blue-500' : 'bg-gray-300'}`} />
-                    <span className="text-sm">Paquete recolectado</span>
-                    {orden.estado === 'recolectado' && (
-                      <Badge className="bg-blue-100 text-blue-800">Actual</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${['en_transito', 'en_destino', 'entregado'].includes(orden.estado) ? 'bg-purple-500' : 'bg-gray-300'}`} />
-                    <span className="text-sm">En tránsito</span>
-                    {orden.estado === 'en_transito' && (
-                      <Badge className="bg-purple-100 text-purple-800">Actual</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${['en_destino', 'entregado'].includes(orden.estado) ? 'bg-orange-500' : 'bg-gray-300'}`} />
-                    <span className="text-sm">Llegó a destino</span>
-                    {orden.estado === 'en_destino' && (
-                      <Badge className="bg-orange-100 text-orange-800">Actual</Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${orden.estado === 'entregado' ? 'bg-green-500' : 'bg-gray-300'}`} />
-                    <span className="text-sm">Entregado</span>
-                    {orden.estado === 'entregado' && (
-                      <Badge className="bg-green-100 text-green-800">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Completado
-                      </Badge>
+                <div className="relative">
+                  {/* Línea de conexión */}
+                  <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gray-200"></div>
+                  
+                  <div className="space-y-6">
+                    {/* Pendiente */}
+                    <div className="flex items-start gap-4">
+                      <div className={`relative z-10 w-3 h-3 rounded-full mt-1 ${
+                        orden.estado === 'pendiente' ? 'bg-yellow-500 ring-4 ring-yellow-100' : 
+                        ['recolectado', 'en_transito', 'en_destino', 'entregado'].includes(orden.estado) ? 'bg-green-500' : 'bg-gray-300'
+                      }`} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">Orden creada</span>
+                          {orden.estado === 'pendiente' && (
+                            <Badge className="bg-yellow-100 text-yellow-800 text-xs">Actual</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Pendiente de recolección • {formatFecha(orden.created_at)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Recolectado */}
+                    <div className="flex items-start gap-4">
+                      <div className={`relative z-10 w-3 h-3 rounded-full mt-1 ${
+                        orden.estado === 'recolectado' ? 'bg-blue-500 ring-4 ring-blue-100' : 
+                        ['en_transito', 'en_destino', 'entregado'].includes(orden.estado) ? 'bg-green-500' : 'bg-gray-300'
+                      }`} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">Paquete recolectado</span>
+                          {orden.estado === 'recolectado' && (
+                            <Badge className="bg-blue-100 text-blue-800 text-xs">Actual</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          El paquete fue recogido desde {orden.remitente_localidad}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* En tránsito */}
+                    <div className="flex items-start gap-4">
+                      <div className={`relative z-10 w-3 h-3 rounded-full mt-1 ${
+                        orden.estado === 'en_transito' ? 'bg-purple-500 ring-4 ring-purple-100' : 
+                        ['en_destino', 'entregado'].includes(orden.estado) ? 'bg-green-500' : 'bg-gray-300'
+                      }`} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">En tránsito</span>
+                          {orden.estado === 'en_transito' && (
+                            <Badge className="bg-purple-100 text-purple-800 text-xs">Actual</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Camino hacia {orden.destinatario_localidad}, {orden.destinatario_provincia}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* En destino */}
+                    <div className="flex items-start gap-4">
+                      <div className={`relative z-10 w-3 h-3 rounded-full mt-1 ${
+                        orden.estado === 'en_destino' ? 'bg-orange-500 ring-4 ring-orange-100' : 
+                        orden.estado === 'entregado' ? 'bg-green-500' : 'bg-gray-300'
+                      }`} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">Llegó a destino</span>
+                          {orden.estado === 'en_destino' && (
+                            <Badge className="bg-orange-100 text-orange-800 text-xs">Actual</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          En {orden.destinatario_localidad}, preparando para entrega
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Entregado */}
+                    <div className="flex items-start gap-4">
+                      <div className={`relative z-10 w-3 h-3 rounded-full mt-1 ${
+                        orden.estado === 'entregado' ? 'bg-green-500 ring-4 ring-green-100' : 'bg-gray-300'
+                      }`} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">Entregado</span>
+                          {orden.estado === 'entregado' && (
+                            <Badge className="bg-green-100 text-green-800 text-xs">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Completado
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Paquete entregado a {orden.destinatario_nombre}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Cancelado */}
+                    {orden.estado === 'cancelado' && (
+                      <div className="flex items-start gap-4">
+                        <div className="relative z-10 w-3 h-3 rounded-full mt-1 bg-red-500 ring-4 ring-red-100" />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">Cancelado</span>
+                            <Badge className="bg-red-100 text-red-800 text-xs">Cancelado</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            La orden fue cancelada
+                          </p>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Botón para nueva búsqueda */}
+            <div className="text-center">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setOrden(null);
+                  setNumeroOrden('');
+                  setNoEncontrado(false);
+                }}
+              >
+                Buscar otra orden
+              </Button>
+            </div>
           </div>
         )}
       </div>
