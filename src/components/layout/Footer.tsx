@@ -7,9 +7,11 @@ const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="bg-white text-black px-3 py-1 rounded font-bold text-xl">
-              PUNTO ENVÍO
-            </div>
+            <img 
+              src="/lovable-uploads/2b896867-2539-4b4e-8e0a-14d4fec450a4.png" 
+              alt="Punto Envío Logo" 
+              className="h-12 w-auto"
+            />
           </div>
           
           {/* Company Information */}
