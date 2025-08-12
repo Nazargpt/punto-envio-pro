@@ -16,6 +16,7 @@ import Admin from "./pages/Admin";
 import AdminUsuarios from "./pages/AdminUsuarios";
 import AdminReportes from "./pages/AdminReportes";
 import AdminConfiguracion from "./pages/AdminConfiguracion";
+import AdminTarifario from "./pages/AdminTarifario";
 import Agencias from "./pages/Agencias";
 import NotFound from "./pages/NotFound";
 
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/admin/agencias" element={<Layout><Agencias /></Layout>} />
           <Route path="/admin/usuarios" element={<Layout><AdminUsuarios /></Layout>} />
           <Route path="/admin/reportes" element={<Layout><AdminReportes /></Layout>} />
+          <Route path="/admin/tarifario" element={<Layout><AdminTarifario /></Layout>} />
           <Route path="/admin/configuracion" element={<Layout><AdminConfiguracion /></Layout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<Layout><NotFound /></Layout>} />

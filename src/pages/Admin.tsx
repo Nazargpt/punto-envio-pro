@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Truck, Users, Settings, BarChart3, Shield } from 'lucide-react';
+import { Building2, Truck, Users, Settings, BarChart3, Shield, Calculator } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Admin: React.FC = () => {
@@ -148,7 +148,7 @@ const Admin: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link to="/admin/usuarios" className="flex-1">
               <Button variant="outline" className="h-20 flex-col w-full">
                 <Users className="h-6 w-6 mb-2" />
@@ -159,6 +159,12 @@ const Admin: React.FC = () => {
               <Button variant="outline" className="h-20 flex-col w-full">
                 <BarChart3 className="h-6 w-6 mb-2" />
                 <span>Reportes</span>
+              </Button>
+            </Link>
+            <Link to="/admin/tarifario" className="flex-1">
+              <Button variant="outline" className="h-20 flex-col w-full">
+                <Calculator className="h-6 w-6 mb-2" />
+                <span>Tarifario</span>
               </Button>
             </Link>
             <Link to="/admin/configuracion" className="flex-1">
