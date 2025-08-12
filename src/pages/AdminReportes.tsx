@@ -29,6 +29,46 @@ const AdminReportes: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [reportData, setReportData] = useState<any>(null);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState<any>(null);
+  
+  // Estado para reportes programados
+  const [scheduledReports, setScheduledReports] = useState([
+    {
+      id: 1,
+      name: 'Reporte Diario de Órdenes',
+      description: 'Se envía todos los días a las 8:00 AM',
+      nextExecution: 'Mañana 8:00 AM',
+      type: 'orders',
+      frequency: 'daily',
+      time: '08:00',
+      active: true,
+      recipients: ['admin@puntoenvio.com']
+    },
+    {
+      id: 2,
+      name: 'Resumen Semanal Financiero',
+      description: 'Se envía todos los lunes a las 9:00 AM',
+      nextExecution: 'Lunes 9:00 AM',
+      type: 'financial',
+      frequency: 'weekly',
+      time: '09:00',
+      day: 'monday',
+      active: true,
+      recipients: ['admin@puntoenvio.com', 'finanzas@puntoenvio.com']
+    }
+  ]);
+
+  // Estado para nuevo reporte programado
+  const [newSchedule, setNewSchedule] = useState({
+    name: '',
+    type: '',
+    frequency: '',
+    time: '',
+    day: '',
+    recipients: [''],
+    active: true
+  });
 
   const reportTypes = [
     {
@@ -291,6 +331,124 @@ const AdminReportes: React.FC = () => {
     });
   };
 
+  // Funciones para manejar reportes programados
+  const handleEditSchedule = (scheduleId: number) => {
+    const schedule = scheduledReports.find(s => s.id === scheduleId);
+    if (schedule) {
+      setEditingSchedule(schedule);
+      setNewSchedule({
+        name: schedule.name,
+        type: schedule.type,
+        frequency: schedule.frequency,
+        time: schedule.time,
+        day: schedule.day || '',
+        recipients: schedule.recipients,
+        active: schedule.active
+      });
+      setShowScheduleModal(true);
+    }
+  };
+
+  const handlePauseSchedule = (scheduleId: number) => {
+    setScheduledReports(prev => 
+      prev.map(schedule => 
+        schedule.id === scheduleId 
+          ? { ...schedule, active: !schedule.active }
+          : schedule
+      )
+    );
+    
+    const schedule = scheduledReports.find(s => s.id === scheduleId);
+    toast({
+      title: schedule?.active ? "Reporte pausado" : "Reporte activado",
+      description: `El reporte "${schedule?.name}" ha sido ${schedule?.active ? 'pausado' : 'activado'}.`
+    });
+  };
+
+  const handleCreateNewSchedule = () => {
+    setEditingSchedule(null);
+    setNewSchedule({
+      name: '',
+      type: '',
+      frequency: '',
+      time: '',
+      day: '',
+      recipients: [''],
+      active: true
+    });
+    setShowScheduleModal(true);
+  };
+
+  const handleSaveSchedule = () => {
+    if (!newSchedule.name || !newSchedule.type || !newSchedule.frequency || !newSchedule.time) {
+      toast({
+        title: "Campos requeridos",
+        description: "Por favor, completa todos los campos obligatorios.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (editingSchedule) {
+      // Editar reporte existente
+      setScheduledReports(prev =>
+        prev.map(schedule =>
+          schedule.id === editingSchedule.id
+            ? {
+                ...schedule,
+                ...newSchedule,
+                description: `Se envía ${newSchedule.frequency === 'daily' ? 'todos los días' : 'semanalmente'} a las ${newSchedule.time}`,
+                nextExecution: `${newSchedule.frequency === 'daily' ? 'Mañana' : 'Lunes'} ${newSchedule.time}`
+              }
+            : schedule
+        )
+      );
+      toast({
+        title: "Reporte actualizado",
+        description: "La configuración del reporte ha sido actualizada."
+      });
+    } else {
+      // Crear nuevo reporte
+      const newId = Math.max(...scheduledReports.map(s => s.id)) + 1;
+      const newReport = {
+        id: newId,
+        ...newSchedule,
+        description: `Se envía ${newSchedule.frequency === 'daily' ? 'todos los días' : 'semanalmente'} a las ${newSchedule.time}`,
+        nextExecution: `${newSchedule.frequency === 'daily' ? 'Mañana' : 'Lunes'} ${newSchedule.time}`
+      };
+      
+      setScheduledReports(prev => [...prev, newReport]);
+      toast({
+        title: "Reporte creado",
+        description: "El nuevo reporte programado ha sido creado exitosamente."
+      });
+    }
+
+    setShowScheduleModal(false);
+    setEditingSchedule(null);
+  };
+
+  const addRecipient = () => {
+    setNewSchedule(prev => ({
+      ...prev,
+      recipients: [...prev.recipients, '']
+    }));
+  };
+
+  const removeRecipient = (index: number) => {
+    setNewSchedule(prev => ({
+      ...prev,
+      recipients: prev.recipients.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateRecipient = (index: number, email: string) => {
+    setNewSchedule(prev => ({
+      ...prev,
+      recipients: prev.recipients.map((recipient, i) => i === index ? email : recipient)
+    }));
+  };
+
   const downloadReport = (format: string) => {
     if (!reportData) return;
 
@@ -507,35 +665,49 @@ const AdminReportes: React.FC = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold">Reporte Diario de Órdenes</h4>
-                      <p className="text-sm text-muted-foreground">Se envía todos los días a las 8:00 AM</p>
-                      <p className="text-xs text-muted-foreground mt-1">Próxima ejecución: Mañana 8:00 AM</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">Editar</Button>
-                      <Button size="sm" variant="destructive">Pausar</Button>
+                {scheduledReports.map((schedule) => (
+                  <div key={schedule.id} className="border rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-semibold">{schedule.name}</h4>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            schedule.active 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-red-100 text-red-700'
+                          }`}>
+                            {schedule.active ? 'Activo' : 'Pausado'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{schedule.description}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Próxima ejecución: {schedule.nextExecution}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Destinatarios: {schedule.recipients.join(', ')}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleEditSchedule(schedule.id)}
+                        >
+                          Editar
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant={schedule.active ? "destructive" : "default"}
+                          onClick={() => handlePauseSchedule(schedule.id)}
+                        >
+                          {schedule.active ? 'Pausar' : 'Activar'}
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
 
-                <div className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-semibold">Resumen Semanal Financiero</h4>
-                      <p className="text-sm text-muted-foreground">Se envía todos los lunes a las 9:00 AM</p>
-                      <p className="text-xs text-muted-foreground mt-1">Próxima ejecución: Lunes 9:00 AM</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline">Editar</Button>
-                      <Button size="sm" variant="destructive">Pausar</Button>
-                    </div>
-                  </div>
-                </div>
-
-                <Button>
+                <Button onClick={handleCreateNewSchedule}>
                   <Calendar className="mr-2 h-4 w-4" />
                   Nuevo Reporte Programado
                 </Button>
@@ -690,6 +862,140 @@ const AdminReportes: React.FC = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal para crear/editar reportes programados */}
+      <Dialog open={showScheduleModal} onOpenChange={setShowScheduleModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              {editingSchedule ? 'Editar Reporte Programado' : 'Nuevo Reporte Programado'}
+            </DialogTitle>
+            <DialogDescription>
+              Configura los detalles del reporte automático
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="schedule-name">Nombre del Reporte</Label>
+                <Input
+                  id="schedule-name"
+                  placeholder="Ej: Reporte Semanal de Ventas"
+                  value={newSchedule.name}
+                  onChange={(e) => setNewSchedule(prev => ({ ...prev, name: e.target.value }))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="schedule-type">Tipo de Reporte</Label>
+                <Select value={newSchedule.type} onValueChange={(value) => setNewSchedule(prev => ({ ...prev, type: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="orders">Órdenes de Envío</SelectItem>
+                    <SelectItem value="financial">Financiero</SelectItem>
+                    <SelectItem value="performance">Rendimiento</SelectItem>
+                    <SelectItem value="carriers">Transportistas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="schedule-frequency">Frecuencia</Label>
+                <Select value={newSchedule.frequency} onValueChange={(value) => setNewSchedule(prev => ({ ...prev, frequency: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar frecuencia" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">Diario</SelectItem>
+                    <SelectItem value="weekly">Semanal</SelectItem>
+                    <SelectItem value="monthly">Mensual</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="schedule-time">Hora de Envío</Label>
+                <Input
+                  id="schedule-time"
+                  type="time"
+                  value={newSchedule.time}
+                  onChange={(e) => setNewSchedule(prev => ({ ...prev, time: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            {newSchedule.frequency === 'weekly' && (
+              <div>
+                <Label htmlFor="schedule-day">Día de la Semana</Label>
+                <Select value={newSchedule.day} onValueChange={(value) => setNewSchedule(prev => ({ ...prev, day: value }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar día" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monday">Lunes</SelectItem>
+                    <SelectItem value="tuesday">Martes</SelectItem>
+                    <SelectItem value="wednesday">Miércoles</SelectItem>
+                    <SelectItem value="thursday">Jueves</SelectItem>
+                    <SelectItem value="friday">Viernes</SelectItem>
+                    <SelectItem value="saturday">Sábado</SelectItem>
+                    <SelectItem value="sunday">Domingo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label>Destinatarios</Label>
+                <Button 
+                  type="button" 
+                  size="sm" 
+                  variant="outline"
+                  onClick={addRecipient}
+                >
+                  Agregar Email
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {newSchedule.recipients.map((email, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      placeholder="email@ejemplo.com"
+                      value={email}
+                      onChange={(e) => updateRecipient(index, e.target.value)}
+                    />
+                    {newSchedule.recipients.length > 1 && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => removeRecipient(index)}
+                      >
+                        ✕
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-4 justify-end pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowScheduleModal(false)}
+              >
+                Cancelar
+              </Button>
+              <Button onClick={handleSaveSchedule}>
+                {editingSchedule ? 'Actualizar' : 'Crear'} Reporte
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
