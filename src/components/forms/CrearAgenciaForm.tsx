@@ -10,15 +10,17 @@ import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Building2, MapPin, Phone, Mail, User } from 'lucide-react';
+import { Building2, MapPin, Phone, Mail, User, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido').min(3, 'El nombre debe tener al menos 3 caracteres'),
   direccion: z.string().min(1, 'La dirección es requerida'),
-  localidad: z.string().min(1, 'La localidad es requerida'),
-  provincia: z.string().min(1, 'La provincia es requerida'),
+  provincia_id: z.string().min(1, 'La provincia es requerida'),
+  localidad_id: z.string().optional(),
+  nueva_localidad: z.string().optional(),
+  codigo_postal: z.string().optional(),
   telefono: z.string().min(1, 'El teléfono es requerido'),
   email: z.string().email('Email inválido'),
   contacto_nombre: z.string().min(1, 'El nombre del contacto es requerido'),
@@ -27,6 +29,9 @@ const formSchema = z.object({
   horario_cierre: z.string().min(1, 'El horario de cierre es requerido'),
   tipo_parada: z.boolean().default(false),
   activo: z.boolean().default(true),
+}).refine((data) => data.localidad_id || data.nueva_localidad, {
+  message: "Debe seleccionar una localidad existente o crear una nueva",
+  path: ["localidad_id"],
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -35,17 +40,26 @@ interface CrearAgenciaFormProps {
   onSuccess?: () => void;
 }
 
-const provinciasArgentinas = [
-  'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes',
-  'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza',
-  'Misiones', 'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis',
-  'Santa Cruz', 'Santa Fe', 'Santiago del Estero', 'Tierra del Fuego',
-  'Tucumán', 'Ciudad Autónoma de Buenos Aires'
-];
+interface Provincia {
+  id: string;
+  nombre: string;
+  codigo: string;
+}
+
+interface Localidad {
+  id: string;
+  nombre: string;
+  provincia_id: string;
+  codigo_postal?: string;
+}
 
 const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [provincias, setProvincias] = React.useState<Provincia[]>([]);
+  const [localidades, setLocalidades] = React.useState<Localidad[]>([]);
+  const [mostrarNuevaLocalidad, setMostrarNuevaLocalidad] = React.useState(false);
+  const [provinciaSeleccionada, setProvinciaSeleccionada] = React.useState<string>('');
 
   const {
     register,
@@ -64,10 +78,114 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
 
   const watchedValues = watch();
 
+  // Cargar provincias al montar el componente
+  React.useEffect(() => {
+    const cargarProvincias = async () => {
+      const { data, error } = await supabase
+        .from('provincias')
+        .select('*')
+        .order('nombre');
+      
+      if (error) {
+        console.error('Error al cargar provincias:', error);
+        return;
+      }
+      
+      setProvincias(data || []);
+    };
+
+    cargarProvincias();
+  }, []);
+
+  // Cargar localidades cuando se selecciona una provincia
+  React.useEffect(() => {
+    if (provinciaSeleccionada) {
+      const cargarLocalidades = async () => {
+        const { data, error } = await supabase
+          .from('localidades')
+          .select('*')
+          .eq('provincia_id', provinciaSeleccionada)
+          .order('nombre');
+        
+        if (error) {
+          console.error('Error al cargar localidades:', error);
+          return;
+        }
+        
+        setLocalidades(data || []);
+      };
+
+      cargarLocalidades();
+    }
+  }, [provinciaSeleccionada]);
+
+  const handleProvinciaChange = (provinciaId: string) => {
+    setProvinciaSeleccionada(provinciaId);
+    setValue('provincia_id', provinciaId);
+    setValue('localidad_id', '');
+    setValue('nueva_localidad', '');
+    setMostrarNuevaLocalidad(false);
+  };
+
+  const handleLocalidadChange = (localidadId: string) => {
+    setValue('localidad_id', localidadId);
+    setValue('nueva_localidad', '');
+    setMostrarNuevaLocalidad(false);
+  };
+
+  const crearNuevaLocalidad = async (nombreLocalidad: string, codigoPostal?: string) => {
+    if (!provinciaSeleccionada || !nombreLocalidad.trim()) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('localidades')
+        .insert({
+          nombre: nombreLocalidad.trim(),
+          provincia_id: provinciaSeleccionada,
+          codigo_postal: codigoPostal || null
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      // Actualizar la lista de localidades
+      setLocalidades(prev => [...prev, data]);
+      
+      return data.id;
+    } catch (error) {
+      console.error('Error al crear localidad:', error);
+      throw error;
+    }
+  };
+
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     
     try {
+      let localidadId = data.localidad_id;
+      
+      // Si se va a crear una nueva localidad
+      if (data.nueva_localidad && !data.localidad_id) {
+        localidadId = await crearNuevaLocalidad(data.nueva_localidad, data.codigo_postal);
+        if (!localidadId) {
+          throw new Error('Error al crear la localidad');
+        }
+      }
+
+      // Obtener datos de la provincia y localidad para guardar en la agencia
+      const { data: provinciaData } = await supabase
+        .from('provincias')
+        .select('nombre')
+        .eq('id', data.provincia_id)
+        .single();
+
+      const { data: localidadData } = await supabase
+        .from('localidades')
+        .select('nombre')
+        .eq('id', localidadId)
+        .single();
+
       // Preparar el objeto de contacto en formato JSON
       const contactoData = {
         telefono: data.telefono,
@@ -85,8 +203,8 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
         .insert({
           nombre: data.nombre,
           direccion: data.direccion,
-          localidad: data.localidad,
-          provincia: data.provincia,
+          localidad: localidadData?.nombre || '',
+          provincia: provinciaData?.nombre || '',
           contacto: contactoData,
           tipo_parada: data.tipo_parada,
           activo: data.activo
@@ -154,33 +272,79 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
 
               <div className="space-y-2">
                 <Label htmlFor="provincia">Provincia *</Label>
-                <Select onValueChange={(value) => setValue('provincia', value)}>
+                <Select onValueChange={handleProvinciaChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar provincia" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-lg max-h-60 overflow-y-auto z-50">
-                    {provinciasArgentinas.map((provincia) => (
-                      <SelectItem key={provincia} value={provincia}>
-                        {provincia}
+                    {provincias.map((provincia) => (
+                      <SelectItem key={provincia.id} value={provincia.id}>
+                        {provincia.nombre}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.provincia && (
-                  <p className="text-sm text-destructive">{errors.provincia.message}</p>
+                {errors.provincia_id && (
+                  <p className="text-sm text-destructive">{errors.provincia_id.message}</p>
                 )}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="localidad">Localidad *</Label>
-              <Input
-                id="localidad"
-                placeholder="Ej: Buenos Aires"
-                {...register('localidad')}
-              />
-              {errors.localidad && (
-                <p className="text-sm text-destructive">{errors.localidad.message}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="localidad">Localidad *</Label>
+                {provinciaSeleccionada ? (
+                  <div className="space-y-2">
+                    <Select onValueChange={handleLocalidadChange} disabled={!provinciaSeleccionada}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar localidad" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-lg max-h-60 overflow-y-auto z-50">
+                        {localidades.map((localidad) => (
+                          <SelectItem key={localidad.id} value={localidad.id}>
+                            {localidad.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setMostrarNuevaLocalidad(!mostrarNuevaLocalidad)}
+                      className="w-full"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      {mostrarNuevaLocalidad ? 'Cancelar' : 'Agregar Nueva Localidad'}
+                    </Button>
+                  </div>
+                ) : (
+                  <Input
+                    disabled
+                    placeholder="Primero selecciona una provincia"
+                    className="bg-muted"
+                  />
+                )}
+                {errors.localidad_id && (
+                  <p className="text-sm text-destructive">{errors.localidad_id.message}</p>
+                )}
+              </div>
+
+              {mostrarNuevaLocalidad && (
+                <div className="space-y-2">
+                  <Label htmlFor="nueva_localidad">Nueva Localidad</Label>
+                  <Input
+                    id="nueva_localidad"
+                    placeholder="Nombre de la nueva localidad"
+                    {...register('nueva_localidad')}
+                  />
+                  <Input
+                    id="codigo_postal"
+                    placeholder="Código postal (opcional)"
+                    {...register('codigo_postal')}
+                  />
+                </div>
               )}
             </div>
 

@@ -157,6 +157,33 @@ export type Database = {
           },
         ]
       }
+      localidades: {
+        Row: {
+          codigo_postal: string | null
+          created_at: string
+          id: string
+          nombre: string
+          provincia_id: string
+          updated_at: string
+        }
+        Insert: {
+          codigo_postal?: string | null
+          created_at?: string
+          id?: string
+          nombre: string
+          provincia_id: string
+          updated_at?: string
+        }
+        Update: {
+          codigo_postal?: string | null
+          created_at?: string
+          id?: string
+          nombre?: string
+          provincia_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ordenes_envio: {
         Row: {
           agencia_destino_id: string | null
@@ -404,6 +431,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      provincias: {
+        Row: {
+          codigo: string | null
+          created_at: string
+          id: string
+          nombre: string
+          updated_at: string
+        }
+        Insert: {
+          codigo?: string | null
+          created_at?: string
+          id?: string
+          nombre: string
+          updated_at?: string
+        }
+        Update: {
+          codigo?: string | null
+          created_at?: string
+          id?: string
+          nombre?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       "puntoenvio tabla": {
         Row: {
