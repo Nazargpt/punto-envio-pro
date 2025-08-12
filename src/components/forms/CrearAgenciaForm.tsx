@@ -294,31 +294,15 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
               <div className="space-y-2">
                 <Label htmlFor="localidad">Localidad *</Label>
                 {provinciaSeleccionada ? (
-                  <div className="space-y-2">
-                    <Select onValueChange={handleLocalidadChange} disabled={!provinciaSeleccionada}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar localidad" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border shadow-lg max-h-60 overflow-y-auto z-50">
-                        {localidades.map((localidad) => (
-                          <SelectItem key={localidad.id} value={localidad.id}>
-                            {localidad.nombre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setMostrarNuevaLocalidad(!mostrarNuevaLocalidad)}
-                      className="w-full"
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      {mostrarNuevaLocalidad ? 'Cancelar' : 'Agregar Nueva Localidad'}
-                    </Button>
-                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setMostrarNuevaLocalidad(!mostrarNuevaLocalidad)}
+                    className="w-full"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    {mostrarNuevaLocalidad ? 'Cancelar' : 'Agregar Nueva Localidad'}
+                  </Button>
                 ) : (
                   <Input
                     disabled
