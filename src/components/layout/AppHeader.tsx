@@ -46,39 +46,41 @@ const AppHeader: React.FC = () => {
           </div>
 
           {/* Navigation Menu and Action Buttons - All in one line */}
-          <div className="hidden lg:flex items-center space-x-1">
-            {/* Navigation Links */}
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
+          <div className="flex items-center space-x-1">
+            {/* Navigation Links - hidden on small screens */}
+            <div className="hidden lg:flex items-center space-x-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                
+                return (
+                  <Link key={item.path} to={item.path}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={cn(
+                        "h-8 px-2 text-white hover:bg-gray-800 text-xs",
+                        isActive && "bg-gray-800 text-white"
+                      )}
+                    >
+                      <Icon className="mr-1 h-3 w-3" />
+                      {item.title}
+                    </Button>
+                  </Link>
+                );
+              })}
               
-              return (
-                <Link key={item.path} to={item.path}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                      "h-8 px-2 text-white hover:bg-gray-800 text-xs",
-                      isActive && "bg-gray-800 text-white"
-                    )}
-                  >
-                    <Icon className="mr-1 h-3 w-3" />
-                    {item.title}
-                  </Button>
-                </Link>
-              );
-            })}
+              {/* Separator */}
+              <div className="w-px h-6 bg-gray-600 mx-2" />
+            </div>
 
-            {/* Separator */}
-            <div className="w-px h-6 bg-gray-600 mx-2" />
-
-            {/* Three colored buttons */}
+            {/* Three colored buttons - always visible */}
             <Button 
               size="sm" 
               className="bg-blue-600 hover:bg-blue-700 text-white h-8 px-2 text-xs"
             >
               <Building2 className="mr-1 h-3 w-3" />
-              Agencias
+              <span className="hidden sm:inline">Agencias</span>
             </Button>
             
             <Button 
@@ -86,7 +88,7 @@ const AppHeader: React.FC = () => {
               className="bg-orange-600 hover:bg-orange-700 text-white h-8 px-2 text-xs"
             >
               <Truck className="mr-1 h-3 w-3" />
-              Transportistas
+              <span className="hidden sm:inline">Transportistas</span>
             </Button>
             
             <Button 
@@ -94,7 +96,7 @@ const AppHeader: React.FC = () => {
               className="bg-green-600 hover:bg-green-700 text-white h-8 px-2 text-xs"
             >
               <Shield className="mr-1 h-3 w-3" />
-              Admin
+              <span className="hidden sm:inline">Admin</span>
             </Button>
           </div>
 
