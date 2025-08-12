@@ -48,10 +48,7 @@ const AppHeader: React.FC = () => {
           {/* Logo and Brand */}
           <div className="flex items-center space-x-4">
             <img src="/lovable-uploads/ee738c9e-a12c-41a3-b383-9a9759cfa8f3.png" alt="PuntoEnvío" className="h-8" />
-            <div>
-              <h1 className="text-xl font-bold">PuntoEnvío</h1>
-              <p className="text-xs text-muted-foreground">Sistema de Cargas</p>
-            </div>
+            <h1 className="text-xl font-bold">PuntoEnvío</h1>
           </div>
 
           {/* Navigation Menu */}

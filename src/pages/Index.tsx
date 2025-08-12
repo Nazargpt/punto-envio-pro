@@ -1,4 +1,5 @@
 import React from 'react';
+import Autoplay from 'embla-carousel-autoplay';
 import AppHeader from '@/components/layout/AppHeader';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -78,7 +79,17 @@ const Index = () => {
       <main>
         {/* Hero Section with Carousel */}
         <section className="relative h-[70vh] overflow-hidden">
-          <Carousel className="w-full h-full">
+          <Carousel 
+            className="w-full h-full"
+            opts={{
+              loop: true,
+            }}
+            plugins={[
+              Autoplay({
+                delay: 6000,
+              }),
+            ]}
+          >
             <CarouselContent>
               {heroImages.map((image, index) => (
                 <CarouselItem key={index}>
