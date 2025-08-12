@@ -1,8 +1,9 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
-import { Package, MapPin, Users, TrendingUp, AlertTriangle, Home } from 'lucide-react';
+import { Package, MapPin, Users, TrendingUp, AlertTriangle, User, Home, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const AppHeader: React.FC = () => {
@@ -10,11 +11,6 @@ const AppHeader: React.FC = () => {
   const location = useLocation();
 
   const navItems = [
-    { 
-      title: "Dashboard", 
-      path: "/", 
-      icon: Home 
-    },
     { 
       title: "Órdenes", 
       path: "/ordenes", 
@@ -81,19 +77,40 @@ const AppHeader: React.FC = () => {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-            <div className="text-right hidden sm:block">
-              <p className="font-medium text-sm">{user?.email}</p>
-              <p className="text-xs text-muted-foreground">
-                {isDevMode ? 'Modo Desarrollo - SUPERADMIN' : 'Administrador'}
-              </p>
-            </div>
-            <Button variant="outline" size="sm" onClick={signOut}>
-              {isDevMode ? 'Salir del Modo Dev' : 'Cerrar Sesión'}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                  <User className="h-4 w-4" />
+                  <span className="hidden sm:inline">{user?.email}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div>
+                    <p className="font-medium">{user?.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isDevMode ? 'Modo Desarrollo - SUPERADMIN' : 'Administrador'}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/" className="flex items-center">
+                    <Home className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {isDevMode ? 'Salir del Modo Dev' : 'Cerrar Sesión'}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation - No incluir Dashboard aquí ya que está en el menú de usuario */}
         <nav className="md:hidden mt-4 flex flex-wrap gap-2">
           {navItems.map((item) => {
             const Icon = item.icon;
