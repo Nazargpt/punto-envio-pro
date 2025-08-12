@@ -52,11 +52,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   } as User;
 
   useEffect(() => {
+    // Inicializar directamente sin autenticación obligatoria
+    setLoading(false);
+
     // Skip Supabase auth in dev mode
     if (isDevMode) {
       setUser(mockAdminUser);
       setSession({} as Session);
-      setLoading(false);
       return;
     }
 
