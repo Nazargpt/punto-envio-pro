@@ -24,7 +24,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Layout><Index /></Layout>} />
             <Route path="/crear-orden" element={<Layout><CrearOrden /></Layout>} />
             <Route path="/ordenes" element={<Layout><Ordenes /></Layout>} />
             <Route path="/hojas-ruta" element={<Layout><HojasRuta /></Layout>} />
@@ -32,7 +32,7 @@ const App = () => (
             <Route path="/tarifas" element={<Layout><Tarifas /></Layout>} />
             <Route path="/incidencias" element={<Layout><Incidencias /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<Layout><NotFound /></Layout>} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
