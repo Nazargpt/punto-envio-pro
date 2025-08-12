@@ -42,7 +42,9 @@ const AppHeader: React.FC = () => {
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
           <div className="flex items-center">
-            <img src="/lovable-uploads/ee738c9e-a12c-41a3-b383-9a9759cfa8f3.png" alt="PuntoEnvío" className="h-8" />
+            <Link to="/">
+              <img src="/lovable-uploads/ee738c9e-a12c-41a3-b383-9a9759cfa8f3.png" alt="PuntoEnvío" className="h-8 cursor-pointer hover:opacity-80 transition-opacity" />
+            </Link>
           </div>
 
           {/* Navigation Menu and Action Buttons - All inline */}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
@@ -7,11 +8,13 @@ const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo */}
           <div className="flex items-center">
-            <img 
-              src="/lovable-uploads/2b896867-2539-4b4e-8e0a-14d4fec450a4.png" 
-              alt="Punto Envío Logo" 
-              className="h-12 w-auto"
-            />
+            <Link to="/">
+              <img 
+                src="/lovable-uploads/2b896867-2539-4b4e-8e0a-14d4fec450a4.png" 
+                alt="Punto Envío Logo" 
+                className="h-12 w-auto cursor-pointer hover:opacity-80 transition-opacity"
+              />
+            </Link>
           </div>
           
           {/* Company Information */}
