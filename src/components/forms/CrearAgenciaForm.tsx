@@ -19,7 +19,7 @@ const formSchema = z.object({
   direccion: z.string().min(1, 'La dirección es requerida'),
   provincia_id: z.string().min(1, 'La provincia es requerida'),
   localidad_id: z.string().optional(),
-  nueva_localidad: z.string().optional(),
+  nueva_localidad: z.string().min(1, 'El nombre de la localidad es requerido'),
   codigo_postal: z.string().optional(),
   telefono: z.string().min(1, 'El teléfono es requerido'),
   email: z.string().email('Email inválido'),
@@ -29,9 +29,6 @@ const formSchema = z.object({
   horario_cierre: z.string().min(1, 'El horario de cierre es requerido'),
   tipo_parada: z.boolean().default(false),
   activo: z.boolean().default(true),
-}).refine((data) => data.localidad_id || data.nueva_localidad, {
-  message: "Debe seleccionar una localidad existente o crear una nueva",
-  path: ["localidad_id"],
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -163,14 +160,10 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
     setIsSubmitting(true);
     
     try {
-      let localidadId = data.localidad_id;
-      
-      // Si se va a crear una nueva localidad
-      if (data.nueva_localidad && !data.localidad_id) {
-        localidadId = await crearNuevaLocalidad(data.nueva_localidad, data.codigo_postal);
-        if (!localidadId) {
-          throw new Error('Error al crear la localidad');
-        }
+      // Crear nueva localidad (ahora es obligatorio)
+      const localidadId = await crearNuevaLocalidad(data.nueva_localidad, data.codigo_postal);
+      if (!localidadId) {
+        throw new Error('Error al crear la localidad');
       }
 
       // Obtener datos de la provincia y localidad para guardar en la agencia
@@ -310,19 +303,22 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
                     className="bg-muted"
                   />
                 )}
-                {errors.localidad_id && (
-                  <p className="text-sm text-destructive">{errors.localidad_id.message}</p>
+                {errors.nueva_localidad && (
+                  <p className="text-sm text-destructive">{errors.nueva_localidad.message}</p>
                 )}
               </div>
 
               {mostrarNuevaLocalidad && (
                 <div className="space-y-2">
-                  <Label htmlFor="nueva_localidad">Nueva Localidad</Label>
+                  <Label htmlFor="nueva_localidad">Nueva Localidad *</Label>
                   <Input
                     id="nueva_localidad"
                     placeholder="Nombre de la nueva localidad"
                     {...register('nueva_localidad')}
                   />
+                  {errors.nueva_localidad && (
+                    <p className="text-sm text-destructive">{errors.nueva_localidad.message}</p>
+                  )}
                   <Input
                     id="codigo_postal"
                     placeholder="Código postal (opcional)"
