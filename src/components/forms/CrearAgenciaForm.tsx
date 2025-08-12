@@ -134,6 +134,20 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
     if (!provinciaSeleccionada || !nombreLocalidad.trim()) return null;
 
     try {
+      // Primero verificar si la localidad ya existe
+      const { data: existingLocalidad } = await supabase
+        .from('localidades')
+        .select('id')
+        .eq('nombre', nombreLocalidad.trim())
+        .eq('provincia_id', provinciaSeleccionada)
+        .maybeSingle();
+      
+      // Si la localidad ya existe, devolver su ID
+      if (existingLocalidad) {
+        return existingLocalidad.id;
+      }
+      
+      // Si no existe, crearla
       const { data, error } = await supabase
         .from('localidades')
         .insert({
