@@ -38,7 +38,7 @@ const AppHeader: React.FC = () => {
 
   return (
     <header className="bg-black border-b border-gray-800">
-      <div className="px-6 py-4">
+      <div className="px-4 py-2">
         <div className="flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center">
@@ -46,9 +46,9 @@ const AppHeader: React.FC = () => {
           </div>
 
           {/* Navigation Menu and Action Buttons - All in one line */}
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center gap-0.5">
             {/* Navigation Links - hidden on small screens */}
-            <div className="hidden lg:flex items-center space-x-1">
+            <div className="hidden xl:flex items-center gap-0.5">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.path;
@@ -59,7 +59,7 @@ const AppHeader: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       className={cn(
-                        "h-8 px-2 text-white hover:bg-gray-800 text-xs",
+                        "h-7 px-1.5 text-white hover:bg-gray-800 text-xs",
                         isActive && "bg-gray-800 text-white"
                       )}
                     >
@@ -71,43 +71,43 @@ const AppHeader: React.FC = () => {
               })}
               
               {/* Separator */}
-              <div className="w-px h-6 bg-gray-600 mx-2" />
+              <div className="w-px h-4 bg-gray-600 mx-1" />
             </div>
 
             {/* Three colored buttons - always visible */}
             <Button 
               size="sm" 
-              className="bg-blue-600 hover:bg-blue-700 text-white h-8 px-2 text-xs"
+              className="bg-blue-600 hover:bg-blue-700 text-white h-7 px-1.5 text-xs"
             >
               <Building2 className="mr-1 h-3 w-3" />
-              <span className="hidden sm:inline">Agencias</span>
+              <span className="hidden md:inline">Agencias</span>
             </Button>
             
             <Button 
               size="sm" 
-              className="bg-orange-600 hover:bg-orange-700 text-white h-8 px-2 text-xs"
+              className="bg-orange-600 hover:bg-orange-700 text-white h-7 px-1.5 text-xs ml-0.5"
             >
               <Truck className="mr-1 h-3 w-3" />
-              <span className="hidden sm:inline">Transportistas</span>
+              <span className="hidden md:inline">Transportistas</span>
             </Button>
             
             <Button 
               size="sm" 
-              className="bg-green-600 hover:bg-green-700 text-white h-8 px-2 text-xs"
+              className="bg-green-600 hover:bg-green-700 text-white h-7 px-1.5 text-xs ml-0.5"
             >
               <Shield className="mr-1 h-3 w-3" />
-              <span className="hidden sm:inline">Admin</span>
+              <span className="hidden md:inline">Admin</span>
             </Button>
           </div>
 
           {/* User Menu and Login */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center ml-1">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2 text-white hover:bg-gray-800 h-8 px-2">
+                  <Button variant="ghost" size="sm" className="flex items-center text-white hover:bg-gray-800 h-7 px-1.5 text-xs">
                     <User className="h-3 w-3" />
-                    <span className="hidden sm:inline text-xs">{user?.email}</span>
+                    <span className="hidden lg:inline ml-1">{user?.email}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-white z-50">
@@ -138,7 +138,7 @@ const AppHeader: React.FC = () => {
                 <DialogTrigger asChild>
                   <Button 
                     size="sm" 
-                    className="bg-black hover:bg-gray-900 text-white border border-gray-600 h-8 w-8 p-0"
+                    className="bg-black hover:bg-gray-900 text-white border border-gray-600 h-7 w-7 p-0"
                   >
                     <LogIn className="h-4 w-4" />
                   </Button>
