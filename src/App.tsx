@@ -11,6 +11,7 @@ import Transportistas from "./pages/Transportistas";
 import Tarifas from "./pages/Tarifas";
 import Incidencias from "./pages/Incidencias";
 import CrearOrden from "./pages/CrearOrden";
+import Cotizador from "./pages/Cotizador";
 import Seguimiento from "./pages/Seguimiento";
 import Admin from "./pages/Admin";
 import AdminUsuarios from "./pages/AdminUsuarios";
@@ -30,6 +31,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Layout><Index /></Layout>} />
+          <Route path="/cotizador" element={<Layout><Cotizador /></Layout>} />
           <Route path="/crear-orden" element={<Layout><CrearOrden /></Layout>} />
           <Route path="/ordenes" element={<Layout><Ordenes /></Layout>} />
           <Route path="/hojas-ruta" element={<Layout><HojasRuta /></Layout>} />

@@ -63,12 +63,35 @@ const CrearOrden = () => {
   const [enviandoOrden, setEnviandoOrden] = useState(false);
   
   const navigate = useNavigate();
+  
+  // Get URL search params to pre-fill form from cotizador
+  const urlParams = new URLSearchParams(window.location.search);
 
   const form = useForm<OrdenFormData>({
     resolver: zodResolver(ordenSchema),
     defaultValues: {
-      tipoRecoleccion: 'domicilio',
-      tipoEntrega: 'domicilio',
+      // Pre-fill from cotizador if available
+      remitenteNombre: urlParams.get('remitenteNombre') || '',
+      remitenteApellido: urlParams.get('remitenteApellido') || '',
+      remitenteDocumento: urlParams.get('remitenteDocumento') || '',
+      remitenteDomicilio: urlParams.get('remitenteDomicilio') || '',
+      remitenteProvincia: urlParams.get('remitenteProvincia') || '',
+      remitenteLocalidad: urlParams.get('remitenteLocalidad') || '',
+      diaRecoleccion: urlParams.get('diaRecoleccion') || '',
+      horaRecoleccion: urlParams.get('horaRecoleccion') || '',
+      tipoRecoleccion: (urlParams.get('tipoRecoleccion') as 'domicilio' | 'agencia') || 'domicilio',
+      agenciaOrigenId: urlParams.get('agenciaOrigenId') || '',
+      
+      destinatarioNombre: urlParams.get('destinatarioNombre') || '',
+      destinatarioApellido: urlParams.get('destinatarioApellido') || '',
+      destinatarioDocumento: urlParams.get('destinatarioDocumento') || '',
+      destinatarioDomicilio: urlParams.get('destinatarioDomicilio') || '',
+      destinatarioProvincia: urlParams.get('destinatarioProvincia') || '',
+      destinatarioLocalidad: urlParams.get('destinatarioLocalidad') || '',
+      diaEntrega: urlParams.get('diaEntrega') || '',
+      horaEntrega: urlParams.get('horaEntrega') || '',
+      tipoEntrega: (urlParams.get('tipoEntrega') as 'domicilio' | 'agencia') || 'domicilio',
+      agenciaDestinoId: urlParams.get('agenciaDestinoId') || '',
     },
   });
 
@@ -215,6 +238,13 @@ const CrearOrden = () => {
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground">Crear Nueva Orden de Envío</h1>
           <p className="text-muted-foreground">Complete los datos del remitente y destinatario</p>
+          {urlParams.get('cotizacionTotal') && (
+            <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-800">
+                📋 Formulario pre-completado desde cotización. Total estimado: <strong>${urlParams.get('cotizacionTotal')}</strong>
+              </p>
+            </div>
+          )}
         </div>
 
         <Form {...form}>
