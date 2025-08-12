@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { Package, MapPin, Users, TrendingUp, AlertTriangle, User, Home, LogOut, LogIn } from 'lucide-react';
+import { Package, Search, Calculator, MapPin, Building2, Truck, Shield, User, Home, LogOut, LogIn } from 'lucide-react';
 import { AuthForm } from '@/components/auth/AuthForm';
 import { cn } from '@/lib/utils';
 
@@ -15,34 +15,29 @@ const AppHeader: React.FC = () => {
 
   const navItems = [
     { 
-      title: "Órdenes", 
-      path: "/ordenes", 
+      title: "Crear Orden de Envío", 
+      path: "/crear-orden", 
       icon: Package 
     },
     { 
-      title: "Hojas de Ruta", 
-      path: "/hojas-ruta", 
+      title: "Seguimiento", 
+      path: "/seguimiento", 
+      icon: Search 
+    },
+    { 
+      title: "Cotizador", 
+      path: "/cotizador", 
+      icon: Calculator 
+    },
+    { 
+      title: "Buscar Agencias", 
+      path: "/buscar-agencias", 
       icon: MapPin 
-    },
-    { 
-      title: "Transportistas", 
-      path: "/transportistas", 
-      icon: Users 
-    },
-    { 
-      title: "Tarifas", 
-      path: "/tarifas", 
-      icon: TrendingUp 
-    },
-    { 
-      title: "Incidencias", 
-      path: "/incidencias", 
-      icon: AlertTriangle 
     }
   ];
 
   return (
-    <header className="bg-card border-b border-border">
+    <header className="bg-black border-b border-gray-800">
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Brand */}
@@ -51,7 +46,7 @@ const AppHeader: React.FC = () => {
           </div>
 
           {/* Navigation Menu */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -59,11 +54,11 @@ const AppHeader: React.FC = () => {
               return (
                 <Link key={item.path} to={item.path}>
                   <Button
-                    variant={isActive ? "default" : "ghost"}
+                    variant="ghost"
                     size="sm"
                     className={cn(
-                      "h-9 px-3",
-                      isActive && "bg-primary text-primary-foreground"
+                      "h-9 px-3 text-white hover:bg-gray-800",
+                      isActive && "bg-gray-800 text-white"
                     )}
                   >
                     <Icon className="mr-2 h-4 w-4" />
@@ -74,12 +69,37 @@ const AppHeader: React.FC = () => {
             })}
           </nav>
 
-          {/* User Menu */}
-          <div className="flex items-center space-x-4">
+          {/* Action Buttons and User Menu */}
+          <div className="flex items-center space-x-2">
+            {/* Three colored buttons */}
+            <Button 
+              size="sm" 
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Building2 className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Agencias</span>
+            </Button>
+            
+            <Button 
+              size="sm" 
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              <Truck className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Transportistas</span>
+            </Button>
+            
+            <Button 
+              size="sm" 
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Shield className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Admin</span>
+            </Button>
+
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2 text-white hover:bg-gray-800">
                     <User className="h-4 w-4" />
                     <span className="hidden sm:inline">{user?.email}</span>
                   </Button>
@@ -110,7 +130,7 @@ const AppHeader: React.FC = () => {
             ) : (
               <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="default" size="sm" className="flex items-center space-x-2">
+                  <Button variant="outline" size="sm" className="flex items-center space-x-2 text-white border-white hover:bg-gray-800">
                     <LogIn className="h-4 w-4" />
                     <span className="hidden sm:inline">Iniciar Sesión</span>
                   </Button>
@@ -126,8 +146,8 @@ const AppHeader: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation - No incluir Dashboard aquí ya que está en el menú de usuario */}
-        <nav className="md:hidden mt-4 flex flex-wrap gap-2">
+        {/* Mobile Navigation */}
+        <nav className="lg:hidden mt-4 flex flex-wrap gap-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -135,9 +155,12 @@ const AppHeader: React.FC = () => {
             return (
               <Link key={item.path} to={item.path}>
                 <Button
-                  variant={isActive ? "default" : "outline"}
+                  variant="ghost"
                   size="sm"
-                  className="h-8 px-2"
+                  className={cn(
+                    "h-8 px-2 text-white hover:bg-gray-800",
+                    isActive && "bg-gray-800 text-white"
+                  )}
                 >
                   <Icon className="mr-1 h-3 w-3" />
                   <span className="text-xs">{item.title}</span>
