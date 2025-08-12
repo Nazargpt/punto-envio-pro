@@ -64,10 +64,10 @@ export type Database = {
           destinatario_nombre: string
           destinatario_provincia: string
           estado: string
-          fecha_entrega: string
-          fecha_recoleccion: string
-          hora_entrega: string
-          hora_recoleccion: string
+          fecha_entrega: string | null
+          fecha_recoleccion: string | null
+          hora_entrega: string | null
+          hora_recoleccion: string | null
           id: string
           numero_orden: string
           remitente_documento: string
@@ -91,10 +91,10 @@ export type Database = {
           destinatario_nombre: string
           destinatario_provincia: string
           estado?: string
-          fecha_entrega: string
-          fecha_recoleccion: string
-          hora_entrega: string
-          hora_recoleccion: string
+          fecha_entrega?: string | null
+          fecha_recoleccion?: string | null
+          hora_entrega?: string | null
+          hora_recoleccion?: string | null
           id?: string
           numero_orden: string
           remitente_documento: string
@@ -118,10 +118,10 @@ export type Database = {
           destinatario_nombre?: string
           destinatario_provincia?: string
           estado?: string
-          fecha_entrega?: string
-          fecha_recoleccion?: string
-          hora_entrega?: string
-          hora_recoleccion?: string
+          fecha_entrega?: string | null
+          fecha_recoleccion?: string | null
+          hora_entrega?: string | null
+          hora_recoleccion?: string | null
           id?: string
           numero_orden?: string
           remitente_documento?: string
