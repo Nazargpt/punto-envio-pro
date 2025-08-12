@@ -52,6 +52,15 @@ const tiposServicio = [
   { value: 'retiro_agencia_destino', label: 'Retiro en Agencia de Destino' },
 ];
 
+const rangosPeso = [
+  { value: '0-1', label: '0 - 1 kg', min: 0, max: 1 },
+  { value: '1-5', label: '1 - 5 kg', min: 1, max: 5 },
+  { value: '5-10', label: '5 - 10 kg', min: 5, max: 10 },
+  { value: '10-20', label: '10 - 20 kg', min: 10, max: 20 },
+  { value: '20-50', label: '20 - 50 kg', min: 20, max: 50 },
+  { value: 'custom', label: 'Rango personalizado', min: 0, max: 0 },
+];
+
 type ServicioFormData = z.infer<typeof servicioSchema>;
 
 const ServiciosTransportistas: React.FC = () => {
@@ -60,6 +69,8 @@ const ServiciosTransportistas: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingServicio, setEditingServicio] = useState<ServicioTransportista | null>(null);
+  const [selectedRangoPeso, setSelectedRangoPeso] = useState<string>('');
+  const [showCustomRange, setShowCustomRange] = useState(false);
 
   const form = useForm<ServicioFormData>({
     resolver: zodResolver(servicioSchema),
@@ -205,6 +216,20 @@ const ServiciosTransportistas: React.FC = () => {
 
   const handleEdit = (servicio: ServicioTransportista) => {
     setEditingServicio(servicio);
+    
+    // Buscar si coincide con algún rango predefinido
+    const rangoExistente = rangosPeso.find(r => 
+      r.min === servicio.peso_minimo && r.max === servicio.peso_maximo
+    );
+    
+    if (rangoExistente) {
+      setSelectedRangoPeso(rangoExistente.value);
+      setShowCustomRange(false);
+    } else {
+      setSelectedRangoPeso('custom');
+      setShowCustomRange(true);
+    }
+    
     form.reset({
       transportista_id: servicio.transportista_id,
       tipo_servicio: servicio.tipo_servicio as any,
@@ -214,6 +239,21 @@ const ServiciosTransportistas: React.FC = () => {
       multiplicador: servicio.multiplicador,
     });
     setIsDialogOpen(true);
+  };
+
+  const handleRangoPesoChange = (value: string) => {
+    setSelectedRangoPeso(value);
+    
+    if (value === 'custom') {
+      setShowCustomRange(true);
+    } else {
+      setShowCustomRange(false);
+      const rango = rangosPeso.find(r => r.value === value);
+      if (rango) {
+        form.setValue('peso_minimo', rango.min);
+        form.setValue('peso_maximo', rango.max);
+      }
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -276,6 +316,8 @@ const ServiciosTransportistas: React.FC = () => {
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingServicio(null);
+              setSelectedRangoPeso('');
+              setShowCustomRange(false);
               form.reset({
                 transportista_id: '',
                 tipo_servicio: 'retiro_domicilio',
@@ -348,45 +390,65 @@ const ServiciosTransportistas: React.FC = () => {
                   )}
                 />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="peso_minimo"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Peso Mínimo (kg)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            step="0.1" 
-                            {...field}
-                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                            value={field.value}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="peso_maximo"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Peso Máximo (kg)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            step="0.1" 
-                            {...field}
-                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                            value={field.value}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Rango de Peso</label>
+                    <Select value={selectedRangoPeso} onValueChange={handleRangoPesoChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar rango de peso" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {rangosPeso.map((rango) => (
+                          <SelectItem key={rango.value} value={rango.value}>
+                            {rango.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {showCustomRange && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="peso_minimo"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Peso Mínimo (kg)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                step="0.1" 
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                value={field.value}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="peso_maximo"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Peso Máximo (kg)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                step="0.1" 
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                value={field.value}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <FormField
