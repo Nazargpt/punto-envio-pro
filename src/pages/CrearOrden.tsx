@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label';
 import { Calendar, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const provinciasArgentina = [
@@ -63,7 +62,6 @@ const CrearOrden = () => {
   const [cargandoAgencias, setCargandoAgencias] = useState(false);
   const [enviandoOrden, setEnviandoOrden] = useState(false);
   
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const form = useForm<OrdenFormData>({
@@ -155,13 +153,10 @@ const CrearOrden = () => {
   };
 
   const onSubmit = async (data: OrdenFormData) => {
-    if (!user?.id) {
-      toast.error('Error: Usuario no autenticado');
-      return;
-    }
-
     setEnviandoOrden(true);
     try {
+      // Usar un ID fijo para el usuario cuando no hay autenticación
+      const usuarioId = '00000000-0000-0000-0000-000000000001';
       // Preparar datos para la base de datos
       const ordenData = {
         numero_orden: '', // Se auto-genera por el trigger
@@ -185,7 +180,7 @@ const CrearOrden = () => {
         fecha_entrega: data.diaEntrega || null,
         hora_entrega: data.horaEntrega || null,
         
-        usuario_creacion_id: user.id,
+        usuario_creacion_id: usuarioId,
         estado: 'pendiente'
       };
 

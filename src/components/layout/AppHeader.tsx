@@ -1,17 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useAuth } from '@/contexts/AuthContext';
-import { Package, Search, Calculator, MapPin, Building2, Truck, Shield, User, Home, LogOut, LogIn } from 'lucide-react';
-import { AuthForm } from '@/components/auth/AuthForm';
+import { Package, Search, Calculator, MapPin, Building2, Truck, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const AppHeader: React.FC = () => {
-  const { user, signOut, isDevMode } = useAuth();
   const location = useLocation();
-  const [authDialogOpen, setAuthDialogOpen] = useState(false);
 
   const navItems = [
     { 
@@ -95,59 +89,6 @@ const AppHeader: React.FC = () => {
               <Shield className="mr-1 h-3 w-3" />
               <span className="hidden md:inline">Admin</span>
             </Button>
-          </div>
-
-          {/* Right: User Menu and Login */}
-          <div className="flex items-center">
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex items-center text-white hover:bg-gray-800 h-7 px-2 text-xs">
-                    <User className="h-3 w-3" />
-                    <span className="hidden lg:inline ml-1">{user?.email}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 bg-white z-50">
-                  <DropdownMenuLabel>
-                    <div>
-                      <p className="font-medium">{user?.email}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {isDevMode ? 'Modo Desarrollo - SUPERADMIN' : 'Administrador'}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/" className="flex items-center">
-                      <Home className="mr-2 h-4 w-4" />
-                      Dashboard
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={signOut}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    {isDevMode ? 'Salir del Modo Dev' : 'Cerrar Sesión'}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    size="sm" 
-                    className="bg-black hover:bg-gray-900 text-white border border-gray-600 h-7 w-7 p-0"
-                  >
-                    <LogIn className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-center">Acceso al Sistema</DialogTitle>
-                  </DialogHeader>
-                  <AuthForm onSuccess={() => setAuthDialogOpen(false)} />
-                </DialogContent>
-              </Dialog>
-            )}
           </div>
         </div>
 

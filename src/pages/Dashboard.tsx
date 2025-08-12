@@ -1,11 +1,9 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
 import { Truck, Package, MapPin, Users, TrendingUp, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
-  const { user, signOut, isDevMode } = useAuth();
 
   const stats = [
     {
@@ -70,14 +68,9 @@ const Dashboard: React.FC = () => {
           
           <div className="flex items-center space-x-4">
             <div className="text-right">
-              <p className="font-medium">{user?.email}</p>
-              <p className="text-sm text-muted-foreground">
-                {isDevMode ? 'Administrador (Desarrollo)' : 'Administrador'}
-              </p>
+              <p className="font-medium">Sistema PuntoEnvío</p>
+              <p className="text-sm text-muted-foreground">Panel de Control</p>
             </div>
-            <Button variant="outline" onClick={signOut}>
-              Cerrar Sesión
-            </Button>
           </div>
         </div>
       </header>
