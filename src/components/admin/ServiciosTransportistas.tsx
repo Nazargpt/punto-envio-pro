@@ -146,6 +146,32 @@ const ServiciosTransportistas: React.FC = () => {
 
         toast.success('Servicio actualizado exitosamente');
       } else {
+        // Verificar si ya existe un servicio similar para validar rangos de peso
+        const { data: existingServices, error: checkError } = await supabase
+          .from('servicios_transportistas')
+          .select('*')
+          .eq('transportista_id', data.transportista_id)
+          .eq('tipo_servicio', data.tipo_servicio)
+          .eq('activo', true);
+
+        if (checkError) {
+          console.error('Error verificando servicios existentes:', checkError);
+          toast.error('Error al verificar servicios existentes');
+          return;
+        }
+
+        // Validar que no se superpongan los rangos de peso
+        const hasOverlap = existingServices?.some(service => 
+          (data.peso_minimo >= service.peso_minimo && data.peso_minimo <= service.peso_maximo) ||
+          (data.peso_maximo >= service.peso_minimo && data.peso_maximo <= service.peso_maximo) ||
+          (data.peso_minimo <= service.peso_minimo && data.peso_maximo >= service.peso_maximo)
+        );
+
+        if (hasOverlap) {
+          toast.error('Ya existe un servicio con un rango de peso que se superpone');
+          return;
+        }
+
         // Crear nuevo servicio
         const { error } = await supabase
           .from('servicios_transportistas')
