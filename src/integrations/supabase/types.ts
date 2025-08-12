@@ -529,6 +529,7 @@ export type Database = {
           licencia_conducir: string | null
           nombre: string
           telefono: string | null
+          tipo_transportista: string
           updated_at: string | null
         }
         Insert: {
@@ -543,6 +544,7 @@ export type Database = {
           licencia_conducir?: string | null
           nombre: string
           telefono?: string | null
+          tipo_transportista?: string
           updated_at?: string | null
         }
         Update: {
@@ -557,9 +559,101 @@ export type Database = {
           licencia_conducir?: string | null
           nombre?: string
           telefono?: string | null
+          tipo_transportista?: string
           updated_at?: string | null
         }
         Relationships: []
+      }
+      transportistas_rutas: {
+        Row: {
+          activo: boolean | null
+          created_at: string | null
+          distancia_km: number | null
+          id: string
+          localidad_destino: string | null
+          localidad_origen: string | null
+          nombre_ruta: string
+          provincia_destino: string
+          provincia_origen: string
+          tiempo_estimado_horas: number | null
+          transportista_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          created_at?: string | null
+          distancia_km?: number | null
+          id?: string
+          localidad_destino?: string | null
+          localidad_origen?: string | null
+          nombre_ruta: string
+          provincia_destino: string
+          provincia_origen: string
+          tiempo_estimado_horas?: number | null
+          transportista_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          created_at?: string | null
+          distancia_km?: number | null
+          id?: string
+          localidad_destino?: string | null
+          localidad_origen?: string | null
+          nombre_ruta?: string
+          provincia_destino?: string
+          provincia_origen?: string
+          tiempo_estimado_horas?: number | null
+          transportista_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transportistas_rutas_transportista_id_fkey"
+            columns: ["transportista_id"]
+            isOneToOne: false
+            referencedRelation: "transportistas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transportistas_zonas_cobertura: {
+        Row: {
+          activo: boolean | null
+          created_at: string | null
+          id: string
+          localidad: string | null
+          provincia: string
+          transportista_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          created_at?: string | null
+          id?: string
+          localidad?: string | null
+          provincia: string
+          transportista_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          created_at?: string | null
+          id?: string
+          localidad?: string | null
+          provincia?: string
+          transportista_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transportistas_zonas_cobertura_transportista_id_fkey"
+            columns: ["transportista_id"]
+            isOneToOne: false
+            referencedRelation: "transportistas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
