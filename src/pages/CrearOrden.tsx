@@ -31,8 +31,8 @@ const ordenSchema = z.object({
   remitenteDomicilio: z.string().min(1, 'Domicilio es requerido'),
   remitenteProvincia: z.string().min(1, 'Provincia es requerida'),
   remitenteLocalidad: z.string().min(1, 'Localidad es requerida'),
-  diaRecoleccion: z.string().min(1, 'Día de recolección es requerido'),
-  horaRecoleccion: z.string().min(1, 'Hora de recolección es requerida'),
+  diaRecoleccion: z.string().optional(),
+  horaRecoleccion: z.string().optional(),
   tipoRecoleccion: z.enum(['domicilio', 'agencia']),
   agenciaOrigenId: z.string().optional(),
   
@@ -43,8 +43,8 @@ const ordenSchema = z.object({
   destinatarioDomicilio: z.string().min(1, 'Domicilio es requerido'),
   destinatarioProvincia: z.string().min(1, 'Provincia es requerida'),
   destinatarioLocalidad: z.string().min(1, 'Localidad es requerida'),
-  diaEntrega: z.string().min(1, 'Día de entrega es requerido'),
-  horaEntrega: z.string().min(1, 'Hora de entrega es requerida'),
+  diaEntrega: z.string().optional(),
+  horaEntrega: z.string().optional(),
   tipoEntrega: z.enum(['domicilio', 'agencia']),
   agenciaDestinoId: z.string().optional(),
 });
@@ -172,8 +172,8 @@ const CrearOrden = () => {
         remitente_localidad: data.remitenteLocalidad,
         tipo_recoleccion: data.tipoRecoleccion,
         agencia_origen_id: data.agenciaOrigenId || null,
-        fecha_recoleccion: data.diaRecoleccion,
-        hora_recoleccion: data.horaRecoleccion,
+        fecha_recoleccion: data.diaRecoleccion || null,
+        hora_recoleccion: data.horaRecoleccion || null,
         
         destinatario_nombre: `${data.destinatarioNombre} ${data.destinatarioApellido}`,
         destinatario_documento: data.destinatarioDocumento,
@@ -182,8 +182,8 @@ const CrearOrden = () => {
         destinatario_localidad: data.destinatarioLocalidad,
         tipo_entrega: data.tipoEntrega,
         agencia_destino_id: data.agenciaDestinoId || null,
-        fecha_entrega: data.diaEntrega,
-        hora_entrega: data.horaEntrega,
+        fecha_entrega: data.diaEntrega || null,
+        hora_entrega: data.horaEntrega || null,
         
         usuario_creacion_id: user.id,
         estado: 'pendiente'
@@ -337,7 +337,7 @@ const CrearOrden = () => {
                       name="diaRecoleccion"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Día de Recolección</FormLabel>
+                          <FormLabel>Día de Recolección (Opcional)</FormLabel>
                           <FormControl>
                             <Input 
                               type="date" 
@@ -359,7 +359,7 @@ const CrearOrden = () => {
                       name="horaRecoleccion"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Hora de Recolección</FormLabel>
+                          <FormLabel>Hora de Recolección (Opcional)</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>
@@ -551,7 +551,7 @@ const CrearOrden = () => {
                       name="diaEntrega"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Día de Entrega</FormLabel>
+                          <FormLabel>Día de Entrega (Opcional)</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -564,7 +564,7 @@ const CrearOrden = () => {
                       name="horaEntrega"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Hora de Entrega</FormLabel>
+                          <FormLabel>Hora de Entrega (Opcional)</FormLabel>
                           <FormControl>
                             <Input type="time" {...field} />
                           </FormControl>
