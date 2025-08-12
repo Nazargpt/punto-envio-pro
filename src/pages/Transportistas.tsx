@@ -5,7 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Users, Plus, Search, Truck, MapPin, Phone, Mail } from 'lucide-react';
+import { CrearTransportistaForm } from '@/components/forms/CrearTransportistaForm';
 
 const Transportistas: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -102,10 +104,17 @@ const Transportistas: React.FC = () => {
           <h1 className="text-3xl font-bold">Transportistas</h1>
           <p className="text-muted-foreground">Gestiona transportistas locales y de larga distancia</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Transportista
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Transportista
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <CrearTransportistaForm />
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats Cards */}
