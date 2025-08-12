@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { Package, MapPin, Users, TrendingUp, AlertTriangle, User, Home, LogOut } from 'lucide-react';
+import { Package, MapPin, Users, TrendingUp, AlertTriangle, User, Home, LogOut, LogIn } from 'lucide-react';
+import { AuthForm } from '@/components/auth/AuthForm';
 import { cn } from '@/lib/utils';
 
 const AppHeader: React.FC = () => {
   const { user, signOut, isDevMode } = useAuth();
   const location = useLocation();
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
 
   const navItems = [
     { 
@@ -77,36 +80,53 @@ const AppHeader: React.FC = () => {
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                  <User className="h-4 w-4" />
-                  <span className="hidden sm:inline">{user?.email}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div>
-                    <p className="font-medium">{user?.email}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {isDevMode ? 'Modo Desarrollo - SUPERADMIN' : 'Administrador'}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/" className="flex items-center">
-                    <Home className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  {isDevMode ? 'Salir del Modo Dev' : 'Cerrar Sesión'}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline">{user?.email}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div>
+                      <p className="font-medium">{user?.email}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {isDevMode ? 'Modo Desarrollo - SUPERADMIN' : 'Administrador'}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/" className="flex items-center">
+                      <Home className="mr-2 h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    {isDevMode ? 'Salir del Modo Dev' : 'Cerrar Sesión'}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="default" size="sm" className="flex items-center space-x-2">
+                    <LogIn className="h-4 w-4" />
+                    <span className="hidden sm:inline">Iniciar Sesión</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-center">Acceso al Sistema</DialogTitle>
+                  </DialogHeader>
+                  <AuthForm onSuccess={() => setAuthDialogOpen(false)} />
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
         </div>
 

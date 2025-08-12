@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Layout from "@/components/layout/Layout";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
 import Ordenes from "./pages/Ordenes";
 import HojasRuta from "./pages/HojasRuta";
 import Transportistas from "./pages/Transportistas";
@@ -24,8 +23,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={<Layout><Index /></Layout>} />
             <Route path="/ordenes" element={<Layout><Ordenes /></Layout>} />
             <Route path="/hojas-ruta" element={<Layout><HojasRuta /></Layout>} />
             <Route path="/transportistas" element={<Layout><Transportistas /></Layout>} />

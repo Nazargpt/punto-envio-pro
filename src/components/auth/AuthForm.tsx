@@ -7,7 +7,11 @@ import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { Truck, Mail, Github } from 'lucide-react';
 
-export const AuthForm: React.FC = () => {
+interface AuthFormProps {
+  onSuccess?: () => void;
+}
+
+export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,10 +23,14 @@ export const AuthForm: React.FC = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
-        await signIn(email, password);
-      } else {
-        await signUp(email, password);
+      const result = isLogin 
+        ? await signIn(email, password)
+        : await signUp(email, password);
+
+      if (!result.error) {
+        setEmail('');
+        setPassword('');
+        onSuccess?.();
       }
     } finally {
       setLoading(false);
@@ -32,7 +40,10 @@ export const AuthForm: React.FC = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      if (!result.error) {
+        onSuccess?.();
+      }
     } finally {
       setLoading(false);
     }
@@ -41,15 +52,22 @@ export const AuthForm: React.FC = () => {
   const handleGitHubSignIn = async () => {
     setLoading(true);
     try {
-      await signInWithGitHub();
+      const result = await signInWithGitHub();
+      if (!result.error) {
+        onSuccess?.();
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDevAdminAccess = () => {
+    loginAsAdmin();
+    onSuccess?.();
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
-      <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md border-0 shadow-none">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
             <img src="/lovable-uploads/ee738c9e-a12c-41a3-b383-9a9759cfa8f3.png" alt="PuntoEnvío" className="h-12" />
@@ -66,7 +84,7 @@ export const AuthForm: React.FC = () => {
             <Button
               variant="secondary"
               className="w-full"
-              onClick={loginAsAdmin}
+              onClick={handleDevAdminAccess}
               disabled={loading}
             >
               🔧 Acceso Admin (Desarrollo)
@@ -189,6 +207,5 @@ export const AuthForm: React.FC = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
   );
 };
