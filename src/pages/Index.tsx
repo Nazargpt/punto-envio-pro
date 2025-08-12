@@ -1,5 +1,5 @@
 import React from 'react';
-import Layout from '@/components/layout/Layout';
+import AppHeader from '@/components/layout/AppHeader';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import heroWarehouse from '@/assets/hero-warehouse.jpg';
 import heroDrivers from '@/assets/hero-drivers.jpg';
@@ -28,10 +28,11 @@ const Index = () => {
   ];
 
   return (
-    <Layout>
-      <div className="relative">
+    <div className="min-h-screen bg-muted/50">
+      <AppHeader />
+      <main>
         {/* Hero Section with Carousel */}
-        <section className="relative h-[70vh] overflow-hidden rounded-lg">
+        <section className="relative h-[70vh] overflow-hidden">
           <Carousel className="w-full h-full">
             <CarouselContent>
               {heroImages.map((image, index) => (
@@ -56,8 +57,8 @@ const Index = () => {
             <CarouselNext className="right-4" />
           </Carousel>
         </section>
-      </div>
-    </Layout>
+      </main>
+    </div>
   );
 };
 
