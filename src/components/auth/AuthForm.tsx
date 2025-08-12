@@ -12,7 +12,7 @@ export const AuthForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp, signInWithGoogle, signInWithGitHub } = useAuth();
+  const { signIn, signUp, signInWithGoogle, signInWithGitHub, loginAsAdmin } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,6 +148,18 @@ export const AuthForm: React.FC = () => {
               }
             </Button>
           </form>
+
+          {/* Dev Mode Admin Access */}
+          <div className="border-t border-border pt-4">
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={loginAsAdmin}
+              disabled={loading}
+            >
+              🔧 Acceso Admin (Desarrollo)
+            </Button>
+          </div>
 
           <div className="text-center">
             <Button

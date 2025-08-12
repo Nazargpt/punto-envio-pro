@@ -12,6 +12,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: any }>;
   signInWithGitHub: () => Promise<{ error: any }>;
+  loginAsAdmin: () => void;
+  isDevMode: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDevMode, setIsDevMode] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -153,6 +156,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
+  const loginAsAdmin = () => {
+    // Crear un usuario mock para modo desarrollo
+    const mockUser = {
+      id: 'dev-admin-123',
+      aud: 'authenticated',
+      email: 'admin@puntoenvio.dev',
+      user_metadata: {
+        name: 'Administrador Dev',
+        role: 'SUPERADMIN'
+      },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      app_metadata: {},
+      role: 'authenticated',
+      confirmed_at: new Date().toISOString(),
+      email_confirmed_at: new Date().toISOString(),
+      last_sign_in_at: new Date().toISOString()
+    } as User;
+
+    const mockSession = {
+      user: mockUser,
+      access_token: 'dev-token',
+      refresh_token: 'dev-refresh',
+      expires_in: 3600,
+      expires_at: Date.now() + 3600000,
+      token_type: 'bearer'
+    } as Session;
+
+    setUser(mockUser);
+    setSession(mockSession);
+    setIsDevMode(true);
+    
+    toast({
+      title: "Modo Desarrollo",
+      description: "Conectado como administrador (desarrollo)",
+    });
+  };
+
   const value = {
     user,
     session,
@@ -162,6 +203,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
     signInWithGoogle,
     signInWithGitHub,
+    loginAsAdmin,
+    isDevMode,
   };
 
   return (

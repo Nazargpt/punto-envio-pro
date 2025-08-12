@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Truck, Package, MapPin, Users, TrendingUp, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isDevMode } = useAuth();
 
   const stats = [
     {
@@ -71,7 +71,9 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="text-right">
               <p className="font-medium">{user?.email}</p>
-              <p className="text-sm text-muted-foreground">Administrador</p>
+              <p className="text-sm text-muted-foreground">
+                {isDevMode ? 'Administrador (Desarrollo)' : 'Administrador'}
+              </p>
             </div>
             <Button variant="outline" onClick={signOut}>
               Cerrar Sesión
