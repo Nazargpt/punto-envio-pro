@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      agencias: {
+        Row: {
+          activo: boolean | null
+          contacto: Json | null
+          created_at: string | null
+          direccion: string | null
+          id: string
+          localidad: string | null
+          nombre: string
+          provincia: string | null
+          tipo_parada: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          contacto?: Json | null
+          created_at?: string | null
+          direccion?: string | null
+          id?: string
+          localidad?: string | null
+          nombre: string
+          provincia?: string | null
+          tipo_parada?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          contacto?: Json | null
+          created_at?: string | null
+          direccion?: string | null
+          id?: string
+          localidad?: string | null
+          nombre?: string
+          provincia?: string | null
+          tipo_parada?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          activo: boolean | null
+          agencia_id: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          nombre: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activo?: boolean | null
+          agencia_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          nombre?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activo?: boolean | null
+          agencia_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          nombre?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_agencia_id_fkey"
+            columns: ["agencia_id"]
+            isOneToOne: false
+            referencedRelation: "agencias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       "puntoenvio tabla": {
         Row: {
           created_at: string
@@ -29,15 +109,63 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          agencia_id: string | null
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          agencia_id?: string | null
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          agencia_id?: string | null
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_agencia_id_fkey"
+            columns: ["agencia_id"]
+            isOneToOne: false
+            referencedRelation: "agencias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "SUPERADMIN"
+        | "ADMIN_AGENCIA"
+        | "OPERADOR_AGENCIA"
+        | "TRANSPORTISTA_LOCAL"
+        | "TRANSPORTISTA_LD"
+        | "AUDITOR"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -164,6 +292,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "SUPERADMIN",
+        "ADMIN_AGENCIA",
+        "OPERADOR_AGENCIA",
+        "TRANSPORTISTA_LOCAL",
+        "TRANSPORTISTA_LD",
+        "AUDITOR",
+      ],
+    },
   },
 } as const
