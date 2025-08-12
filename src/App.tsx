@@ -13,6 +13,9 @@ import Incidencias from "./pages/Incidencias";
 import CrearOrden from "./pages/CrearOrden";
 import Seguimiento from "./pages/Seguimiento";
 import Admin from "./pages/Admin";
+import AdminUsuarios from "./pages/AdminUsuarios";
+import AdminReportes from "./pages/AdminReportes";
+import AdminConfiguracion from "./pages/AdminConfiguracion";
 import Agencias from "./pages/Agencias";
 import NotFound from "./pages/NotFound";
 
@@ -35,6 +38,9 @@ const App = () => (
           <Route path="/seguimiento" element={<Layout><Seguimiento /></Layout>} />
           <Route path="/admin" element={<Layout><Admin /></Layout>} />
           <Route path="/admin/agencias" element={<Layout><Agencias /></Layout>} />
+          <Route path="/admin/usuarios" element={<Layout><AdminUsuarios /></Layout>} />
+          <Route path="/admin/reportes" element={<Layout><AdminReportes /></Layout>} />
+          <Route path="/admin/configuracion" element={<Layout><AdminConfiguracion /></Layout>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<Layout><NotFound /></Layout>} />
         </Routes>

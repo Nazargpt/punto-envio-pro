@@ -149,18 +149,24 @@ const Admin: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Button variant="outline" className="h-20 flex-col">
-              <Users className="h-6 w-6 mb-2" />
-              <span>Usuarios</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col">
-              <BarChart3 className="h-6 w-6 mb-2" />
-              <span>Reportes</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col">
-              <Settings className="h-6 w-6 mb-2" />
-              <span>Configuración</span>
-            </Button>
+            <Link to="/admin/usuarios" className="flex-1">
+              <Button variant="outline" className="h-20 flex-col w-full">
+                <Users className="h-6 w-6 mb-2" />
+                <span>Usuarios</span>
+              </Button>
+            </Link>
+            <Link to="/admin/reportes" className="flex-1">
+              <Button variant="outline" className="h-20 flex-col w-full">
+                <BarChart3 className="h-6 w-6 mb-2" />
+                <span>Reportes</span>
+              </Button>
+            </Link>
+            <Link to="/admin/configuracion" className="flex-1">
+              <Button variant="outline" className="h-20 flex-col w-full">
+                <Settings className="h-6 w-6 mb-2" />
+                <span>Configuración</span>
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
