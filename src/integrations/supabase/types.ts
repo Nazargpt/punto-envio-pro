@@ -53,6 +53,112 @@ export type Database = {
         }
         Relationships: []
       }
+      ordenes_envio: {
+        Row: {
+          agencia_destino_id: string | null
+          agencia_origen_id: string | null
+          created_at: string
+          destinatario_documento: string
+          destinatario_domicilio: string
+          destinatario_localidad: string
+          destinatario_nombre: string
+          destinatario_provincia: string
+          estado: string
+          fecha_entrega: string
+          fecha_recoleccion: string
+          hora_entrega: string
+          hora_recoleccion: string
+          id: string
+          numero_orden: string
+          remitente_documento: string
+          remitente_domicilio: string
+          remitente_localidad: string
+          remitente_nombre: string
+          remitente_provincia: string
+          tipo_entrega: string
+          tipo_recoleccion: string
+          transportista_id: string | null
+          updated_at: string
+          usuario_creacion_id: string
+        }
+        Insert: {
+          agencia_destino_id?: string | null
+          agencia_origen_id?: string | null
+          created_at?: string
+          destinatario_documento: string
+          destinatario_domicilio: string
+          destinatario_localidad: string
+          destinatario_nombre: string
+          destinatario_provincia: string
+          estado?: string
+          fecha_entrega: string
+          fecha_recoleccion: string
+          hora_entrega: string
+          hora_recoleccion: string
+          id?: string
+          numero_orden: string
+          remitente_documento: string
+          remitente_domicilio: string
+          remitente_localidad: string
+          remitente_nombre: string
+          remitente_provincia: string
+          tipo_entrega: string
+          tipo_recoleccion: string
+          transportista_id?: string | null
+          updated_at?: string
+          usuario_creacion_id: string
+        }
+        Update: {
+          agencia_destino_id?: string | null
+          agencia_origen_id?: string | null
+          created_at?: string
+          destinatario_documento?: string
+          destinatario_domicilio?: string
+          destinatario_localidad?: string
+          destinatario_nombre?: string
+          destinatario_provincia?: string
+          estado?: string
+          fecha_entrega?: string
+          fecha_recoleccion?: string
+          hora_entrega?: string
+          hora_recoleccion?: string
+          id?: string
+          numero_orden?: string
+          remitente_documento?: string
+          remitente_domicilio?: string
+          remitente_localidad?: string
+          remitente_nombre?: string
+          remitente_provincia?: string
+          tipo_entrega?: string
+          tipo_recoleccion?: string
+          transportista_id?: string | null
+          updated_at?: string
+          usuario_creacion_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ordenes_envio_agencia_destino_id_fkey"
+            columns: ["agencia_destino_id"]
+            isOneToOne: false
+            referencedRelation: "agencias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ordenes_envio_agencia_origen_id_fkey"
+            columns: ["agencia_origen_id"]
+            isOneToOne: false
+            referencedRelation: "agencias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ordenes_envio_transportista_id_fkey"
+            columns: ["transportista_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           activo: boolean | null

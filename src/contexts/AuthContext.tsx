@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Create a mock admin user for dev mode
   const mockAdminUser: User = {
-    id: 'dev-admin-123',
+    id: '00000000-0000-0000-0000-000000000001',
     aud: 'authenticated',
     email: 'admin@puntoenvio.dev',
     user_metadata: {
