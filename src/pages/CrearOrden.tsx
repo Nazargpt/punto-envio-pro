@@ -11,6 +11,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Calendar, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const provinciasArgentina = [
   'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes', 
@@ -58,6 +61,10 @@ const CrearOrden = () => {
   const [agenciasDestino, setAgenciasDestino] = useState<Agencia[]>([]);
   const [agenciasOrigen, setAgenciasOrigen] = useState<Agencia[]>([]);
   const [cargandoAgencias, setCargandoAgencias] = useState(false);
+  const [enviandoOrden, setEnviandoOrden] = useState(false);
+  
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const form = useForm<OrdenFormData>({
     resolver: zodResolver(ordenSchema),
@@ -147,9 +154,64 @@ const CrearOrden = () => {
     return fecha.toISOString().split('T')[0];
   };
 
-  const onSubmit = (data: OrdenFormData) => {
-    console.log('Datos de la orden:', data);
-    // Aquí implementarías la lógica para guardar la orden
+  const onSubmit = async (data: OrdenFormData) => {
+    if (!user?.id) {
+      toast.error('Error: Usuario no autenticado');
+      return;
+    }
+
+    setEnviandoOrden(true);
+    try {
+      // Preparar datos para la base de datos
+      const ordenData = {
+        numero_orden: '', // Se auto-genera por el trigger
+        remitente_nombre: `${data.remitenteNombre} ${data.remitenteApellido}`,
+        remitente_documento: data.remitenteDocumento,
+        remitente_domicilio: data.remitenteDomicilio,
+        remitente_provincia: data.remitenteProvincia,
+        remitente_localidad: data.remitenteLocalidad,
+        tipo_recoleccion: data.tipoRecoleccion,
+        agencia_origen_id: data.agenciaOrigenId || null,
+        fecha_recoleccion: data.diaRecoleccion,
+        hora_recoleccion: data.horaRecoleccion,
+        
+        destinatario_nombre: `${data.destinatarioNombre} ${data.destinatarioApellido}`,
+        destinatario_documento: data.destinatarioDocumento,
+        destinatario_domicilio: data.destinatarioDomicilio,
+        destinatario_provincia: data.destinatarioProvincia,
+        destinatario_localidad: data.destinatarioLocalidad,
+        tipo_entrega: data.tipoEntrega,
+        agencia_destino_id: data.agenciaDestinoId || null,
+        fecha_entrega: data.diaEntrega,
+        hora_entrega: data.horaEntrega,
+        
+        usuario_creacion_id: user.id,
+        estado: 'pendiente'
+      };
+
+      const { data: nuevaOrden, error } = await supabase
+        .from('ordenes_envio')
+        .insert(ordenData)
+        .select('numero_orden')
+        .single();
+
+      if (error) {
+        console.error('Error creando orden:', error);
+        toast.error('Error al crear la orden: ' + error.message);
+        return;
+      }
+
+      toast.success(`Orden creada exitosamente. Número: ${nuevaOrden.numero_orden}`);
+      
+      // Redirigir al seguimiento con el número de orden
+      navigate(`/seguimiento?numero=${nuevaOrden.numero_orden}`);
+      
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error inesperado al crear la orden');
+    } finally {
+      setEnviandoOrden(false);
+    }
   };
 
   return (
@@ -588,9 +650,9 @@ const CrearOrden = () => {
               <Button type="button" variant="outline">
                 Cancelar
               </Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90">
+              <Button type="submit" disabled={enviandoOrden} className="bg-primary hover:bg-primary/90">
                 <Calendar className="mr-2 h-4 w-4" />
-                Crear Orden
+                {enviandoOrden ? 'Creando Orden...' : 'Crear Orden'}
               </Button>
             </div>
           </form>
