@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Calendar, MapPin } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const provinciasArgentina = [
   'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes', 
@@ -41,11 +42,21 @@ const ordenSchema = z.object({
   diaEntrega: z.string().min(1, 'Día de entrega es requerido'),
   horaEntrega: z.string().min(1, 'Hora de entrega es requerida'),
   tipoEntrega: z.enum(['domicilio', 'agencia']),
+  agenciaDestinoId: z.string().optional(),
 });
+
+interface Agencia {
+  id: string;
+  nombre: string;
+  direccion: string;
+}
 
 type OrdenFormData = z.infer<typeof ordenSchema>;
 
 const CrearOrden = () => {
+  const [agenciasDestino, setAgenciasDestino] = useState<Agencia[]>([]);
+  const [cargandoAgencias, setCargandoAgencias] = useState(false);
+
   const form = useForm<OrdenFormData>({
     resolver: zodResolver(ordenSchema),
     defaultValues: {
@@ -53,6 +64,43 @@ const CrearOrden = () => {
       tipoEntrega: 'domicilio',
     },
   });
+
+  // Watch para detectar cambios en la localidad del destinatario y tipo de entrega
+  const tipoEntrega = form.watch('tipoEntrega');
+  const destinatarioLocalidad = form.watch('destinatarioLocalidad');
+
+  // Cargar agencias cuando se selecciona entrega en agencia y hay localidad
+  useEffect(() => {
+    if (tipoEntrega === 'agencia' && destinatarioLocalidad) {
+      cargarAgenciasDestino(destinatarioLocalidad);
+    } else {
+      setAgenciasDestino([]);
+      form.setValue('agenciaDestinoId', '');
+    }
+  }, [tipoEntrega, destinatarioLocalidad, form]);
+
+  const cargarAgenciasDestino = async (localidad: string) => {
+    setCargandoAgencias(true);
+    try {
+      const { data, error } = await supabase
+        .from('agencias')
+        .select('id, nombre, direccion')
+        .eq('localidad', localidad)
+        .eq('activo', true);
+
+      if (error) {
+        console.error('Error cargando agencias:', error);
+        setAgenciasDestino([]);
+      } else {
+        setAgenciasDestino(data || []);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setAgenciasDestino([]);
+    } finally {
+      setCargandoAgencias(false);
+    }
+  };
 
   // Calcular fecha sugerida (48 horas después de recolección)
   const calcularFechaEntrega = (fechaRecoleccion: string) => {
@@ -412,6 +460,50 @@ const CrearOrden = () => {
                       </FormItem>
                     )}
                   />
+
+                  {/* Selector de Agencia de Destino */}
+                  {tipoEntrega === 'agencia' && (
+                    <FormField
+                      control={form.control}
+                      name="agenciaDestinoId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Agencia de Destino</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue 
+                                  placeholder={
+                                    cargandoAgencias 
+                                      ? "Cargando agencias..." 
+                                      : agenciasDestino.length === 0 
+                                        ? "No hay agencias disponibles en esta localidad"
+                                        : "Seleccionar agencia"
+                                  } 
+                                />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {agenciasDestino.map((agencia) => (
+                                <SelectItem key={agencia.id} value={agencia.id}>
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">{agencia.nombre}</span>
+                                    <span className="text-sm text-muted-foreground">{agencia.direccion}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                          {!destinatarioLocalidad && tipoEntrega === 'agencia' && (
+                            <p className="text-sm text-muted-foreground">
+                              Primero ingrese la localidad del destinatario
+                            </p>
+                          )}
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </CardContent>
               </Card>
             </div>
