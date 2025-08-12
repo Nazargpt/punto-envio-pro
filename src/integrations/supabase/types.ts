@@ -53,6 +53,110 @@ export type Database = {
         }
         Relationships: []
       }
+      hojas_ruta: {
+        Row: {
+          created_at: string | null
+          estado: string | null
+          fecha: string
+          id: string
+          km_final: number | null
+          km_inicial: number | null
+          observaciones: string | null
+          transportista_id: string | null
+          updated_at: string | null
+          vehiculo_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          estado?: string | null
+          fecha: string
+          id?: string
+          km_final?: number | null
+          km_inicial?: number | null
+          observaciones?: string | null
+          transportista_id?: string | null
+          updated_at?: string | null
+          vehiculo_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          estado?: string | null
+          fecha?: string
+          id?: string
+          km_final?: number | null
+          km_inicial?: number | null
+          observaciones?: string | null
+          transportista_id?: string | null
+          updated_at?: string | null
+          vehiculo_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hojas_ruta_transportista_id_fkey"
+            columns: ["transportista_id"]
+            isOneToOne: false
+            referencedRelation: "transportistas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hojas_ruta_vehiculo_id_fkey"
+            columns: ["vehiculo_id"]
+            isOneToOne: false
+            referencedRelation: "vehiculos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidencias: {
+        Row: {
+          asignado_a: string | null
+          created_at: string | null
+          descripcion: string
+          estado: string | null
+          fecha_resolucion: string | null
+          id: string
+          orden_envio_id: string | null
+          prioridad: string | null
+          reportado_por: string | null
+          tipo_incidencia: string
+          updated_at: string | null
+        }
+        Insert: {
+          asignado_a?: string | null
+          created_at?: string | null
+          descripcion: string
+          estado?: string | null
+          fecha_resolucion?: string | null
+          id?: string
+          orden_envio_id?: string | null
+          prioridad?: string | null
+          reportado_por?: string | null
+          tipo_incidencia: string
+          updated_at?: string | null
+        }
+        Update: {
+          asignado_a?: string | null
+          created_at?: string | null
+          descripcion?: string
+          estado?: string | null
+          fecha_resolucion?: string | null
+          id?: string
+          orden_envio_id?: string | null
+          prioridad?: string | null
+          reportado_por?: string | null
+          tipo_incidencia?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidencias_orden_envio_id_fkey"
+            columns: ["orden_envio_id"]
+            isOneToOne: false
+            referencedRelation: "ordenes_envio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ordenes_envio: {
         Row: {
           agencia_destino_id: string | null
@@ -159,6 +263,107 @@ export type Database = {
           },
         ]
       }
+      ordenes_hoja_ruta: {
+        Row: {
+          completado: boolean | null
+          created_at: string | null
+          hoja_ruta_id: string | null
+          hora_planificada: string | null
+          hora_real: string | null
+          id: string
+          observaciones: string | null
+          orden_envio_id: string | null
+          orden_visita: number
+          tipo_visita: string
+        }
+        Insert: {
+          completado?: boolean | null
+          created_at?: string | null
+          hoja_ruta_id?: string | null
+          hora_planificada?: string | null
+          hora_real?: string | null
+          id?: string
+          observaciones?: string | null
+          orden_envio_id?: string | null
+          orden_visita: number
+          tipo_visita: string
+        }
+        Update: {
+          completado?: boolean | null
+          created_at?: string | null
+          hoja_ruta_id?: string | null
+          hora_planificada?: string | null
+          hora_real?: string | null
+          id?: string
+          observaciones?: string | null
+          orden_envio_id?: string | null
+          orden_visita?: number
+          tipo_visita?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ordenes_hoja_ruta_hoja_ruta_id_fkey"
+            columns: ["hoja_ruta_id"]
+            isOneToOne: false
+            referencedRelation: "hojas_ruta"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ordenes_hoja_ruta_orden_envio_id_fkey"
+            columns: ["orden_envio_id"]
+            isOneToOne: false
+            referencedRelation: "ordenes_envio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paquetes: {
+        Row: {
+          alto_cm: number | null
+          ancho_cm: number | null
+          created_at: string | null
+          descripcion: string
+          fragil: boolean | null
+          id: string
+          largo_cm: number | null
+          orden_envio_id: string | null
+          peso_kg: number | null
+          valor_declarado: number | null
+        }
+        Insert: {
+          alto_cm?: number | null
+          ancho_cm?: number | null
+          created_at?: string | null
+          descripcion: string
+          fragil?: boolean | null
+          id?: string
+          largo_cm?: number | null
+          orden_envio_id?: string | null
+          peso_kg?: number | null
+          valor_declarado?: number | null
+        }
+        Update: {
+          alto_cm?: number | null
+          ancho_cm?: number | null
+          created_at?: string | null
+          descripcion?: string
+          fragil?: boolean | null
+          id?: string
+          largo_cm?: number | null
+          orden_envio_id?: string | null
+          peso_kg?: number | null
+          valor_declarado?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paquetes_orden_envio_id_fkey"
+            columns: ["orden_envio_id"]
+            isOneToOne: false
+            referencedRelation: "ordenes_envio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           activo: boolean | null
@@ -215,6 +420,147 @@ export type Database = {
         }
         Relationships: []
       }
+      seguimiento_detallado: {
+        Row: {
+          created_at: string | null
+          descripcion: string | null
+          estado: string
+          fecha_hora: string | null
+          id: string
+          observaciones: string | null
+          orden_envio_id: string | null
+          transportista_id: string | null
+          ubicacion: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descripcion?: string | null
+          estado: string
+          fecha_hora?: string | null
+          id?: string
+          observaciones?: string | null
+          orden_envio_id?: string | null
+          transportista_id?: string | null
+          ubicacion?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descripcion?: string | null
+          estado?: string
+          fecha_hora?: string | null
+          id?: string
+          observaciones?: string | null
+          orden_envio_id?: string | null
+          transportista_id?: string | null
+          ubicacion?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seguimiento_detallado_orden_envio_id_fkey"
+            columns: ["orden_envio_id"]
+            isOneToOne: false
+            referencedRelation: "ordenes_envio"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seguimiento_detallado_transportista_id_fkey"
+            columns: ["transportista_id"]
+            isOneToOne: false
+            referencedRelation: "transportistas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tarifas: {
+        Row: {
+          activo: boolean | null
+          created_at: string | null
+          id: string
+          localidad_destino: string | null
+          localidad_origen: string | null
+          precio_base: number
+          precio_por_kg: number | null
+          precio_por_km: number | null
+          provincia_destino: string
+          provincia_origen: string
+          tiempo_estimado_horas: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          created_at?: string | null
+          id?: string
+          localidad_destino?: string | null
+          localidad_origen?: string | null
+          precio_base: number
+          precio_por_kg?: number | null
+          precio_por_km?: number | null
+          provincia_destino: string
+          provincia_origen: string
+          tiempo_estimado_horas?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          created_at?: string | null
+          id?: string
+          localidad_destino?: string | null
+          localidad_origen?: string | null
+          precio_base?: number
+          precio_por_kg?: number | null
+          precio_por_km?: number | null
+          provincia_destino?: string
+          provincia_origen?: string
+          tiempo_estimado_horas?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      transportistas: {
+        Row: {
+          activo: boolean | null
+          apellido: string
+          calificacion: number | null
+          created_at: string | null
+          documento: string
+          email: string | null
+          fecha_vencimiento_licencia: string | null
+          id: string
+          licencia_conducir: string | null
+          nombre: string
+          telefono: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          apellido: string
+          calificacion?: number | null
+          created_at?: string | null
+          documento: string
+          email?: string | null
+          fecha_vencimiento_licencia?: string | null
+          id?: string
+          licencia_conducir?: string | null
+          nombre: string
+          telefono?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          apellido?: string
+          calificacion?: number | null
+          created_at?: string | null
+          documento?: string
+          email?: string | null
+          fecha_vencimiento_licencia?: string | null
+          id?: string
+          licencia_conducir?: string | null
+          nombre?: string
+          telefono?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           agencia_id: string | null
@@ -243,6 +589,59 @@ export type Database = {
             columns: ["agencia_id"]
             isOneToOne: false
             referencedRelation: "agencias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vehiculos: {
+        Row: {
+          activo: boolean | null
+          año: number | null
+          capacidad_kg: number | null
+          capacidad_m3: number | null
+          created_at: string | null
+          id: string
+          marca: string
+          modelo: string
+          patente: string
+          tipo_vehiculo: string
+          transportista_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean | null
+          año?: number | null
+          capacidad_kg?: number | null
+          capacidad_m3?: number | null
+          created_at?: string | null
+          id?: string
+          marca: string
+          modelo: string
+          patente: string
+          tipo_vehiculo: string
+          transportista_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean | null
+          año?: number | null
+          capacidad_kg?: number | null
+          capacidad_m3?: number | null
+          created_at?: string | null
+          id?: string
+          marca?: string
+          modelo?: string
+          patente?: string
+          tipo_vehiculo?: string
+          transportista_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vehiculos_transportista_id_fkey"
+            columns: ["transportista_id"]
+            isOneToOne: false
+            referencedRelation: "transportistas"
             referencedColumns: ["id"]
           },
         ]
