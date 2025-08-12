@@ -1,169 +1,61 @@
 import React from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import Layout from '@/components/layout/Layout';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Package, Truck, CheckCircle, Clock } from 'lucide-react';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import heroWarehouse from '@/assets/hero-warehouse.jpg';
+import heroDrivers from '@/assets/hero-drivers.jpg';
+import heroStaff from '@/assets/hero-staff.jpg';
 
 const Index = () => {
-  const { user, loading } = useAuth();
-
-  const stats = [
+  const heroImages = [
     {
-      title: "Órdenes Hoy",
-      value: "24",
-      description: "+12% vs ayer",
-      icon: Package,
-      color: "text-blue-600"
+      src: heroWarehouse,
+      alt: "Depósito de encomiendas con personal organizando paquetes",
+      title: "Gestión de Almacén",
+      description: "Control total de tu inventario y encomiendas"
     },
     {
-      title: "En Tránsito",
-      value: "67",
-      description: "3 con incidencias",
-      icon: Truck,
-      color: "text-orange-600"
+      src: heroDrivers,
+      alt: "Transportistas profesionales bajando de camiones",
+      title: "Red de Transportistas",
+      description: "Conectamos con los mejores profesionales del transporte"
     },
     {
-      title: "Entregadas",
-      value: "142",
-      description: "Esta semana",
-      icon: CheckCircle,
-      color: "text-green-600"
-    },
-    {
-      title: "Tiempo Promedio",
-      value: "2.3h",
-      description: "Última milla",
-      icon: Clock,
-      color: "text-purple-600"
+      src: heroStaff,
+      alt: "Personal de PuntoEnvío trabajando con documentos y cajas",
+      title: "Equipo Profesional",
+      description: "Personal capacitado para un servicio de excelencia"
     }
   ];
-
-  const recentOrders = [
-    { id: "PE-001", cliente: "Juan Pérez", destino: "CABA", estado: "EN_TRANSITO", tiempo: "2h" },
-    { id: "PE-002", cliente: "María García", destino: "Córdoba", estado: "ENTREGADA", tiempo: "1h" },
-    { id: "PE-003", cliente: "Carlos López", destino: "Rosario", estado: "INCIDENCIA", tiempo: "4h" },
-    { id: "PE-004", cliente: "Ana Rodríguez", destino: "CABA", estado: "ASIGNADA", tiempo: "30m" },
-  ];
-
-  const getStatusColor = (estado: string) => {
-    switch (estado) {
-      case 'ENTREGADA': return 'text-green-600 bg-green-50';
-      case 'EN_TRANSITO': return 'text-orange-600 bg-orange-50';
-      case 'INCIDENCIA': return 'text-red-600 bg-red-50';
-      case 'ASIGNADA': return 'text-blue-600 bg-blue-50';
-      default: return 'text-gray-600 bg-gray-50';
-    }
-  };
-
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (!user) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <div className="text-center space-y-6 max-w-lg">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold">Bienvenido a PuntoEnvío</h1>
-              <p className="text-muted-foreground">
-                Sistema integral de gestión de cargas y logística
-              </p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div className="space-y-2">
-                <Package className="h-8 w-8 mx-auto text-primary" />
-                <p className="font-medium">Gestión de Órdenes</p>
-              </div>
-              <div className="space-y-2">
-                <Truck className="h-8 w-8 mx-auto text-primary" />
-                <p className="font-medium">Hojas de Ruta</p>
-              </div>
-              <div className="space-y-2">
-                <CheckCircle className="h-8 w-8 mx-auto text-primary" />
-                <p className="font-medium">Control de Calidad</p>
-              </div>
-              <div className="space-y-2">
-                <Clock className="h-8 w-8 mx-auto text-primary" />
-                <p className="font-medium">Seguimiento</p>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Inicia sesión para acceder al sistema
-            </p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout>
-      <div className="space-y-6">
-        {/* Welcome Section */}
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard Principal</h1>
-          <p className="text-muted-foreground">Resumen general del sistema PuntoEnvío</p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={index}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                  <Icon className={`h-4 w-4 ${stat.color}`} />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <p className="text-xs text-muted-foreground">{stat.description}</p>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Recent Orders */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Órdenes Recientes</CardTitle>
-            <CardDescription>Últimas órdenes del sistema</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentOrders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
-                  <div className="flex items-center space-x-3">
-                    <Package className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">{order.id}</p>
-                      <p className="text-sm text-muted-foreground">{order.cliente}</p>
+      <div className="relative">
+        {/* Hero Section with Carousel */}
+        <section className="relative h-[70vh] overflow-hidden rounded-lg">
+          <Carousel className="w-full h-full">
+            <CarouselContent>
+              {heroImages.map((image, index) => (
+                <CarouselItem key={index}>
+                  <div className="relative h-[70vh] w-full">
+                    <img
+                      src={image.src}
+                      alt={image.alt}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                      <div className="text-center text-white space-y-4 max-w-2xl px-6">
+                        <h1 className="text-4xl md:text-6xl font-bold">{image.title}</h1>
+                        <p className="text-lg md:text-xl text-white/90">{image.description}</p>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    <div className="text-right">
-                      <p className="text-sm font-medium">{order.destino}</p>
-                      <p className="text-xs text-muted-foreground">{order.tiempo}</p>
-                    </div>
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(order.estado)}`}>
-                      {order.estado.replace('_', ' ')}
-                    </span>
-                  </div>
-                </div>
+                </CarouselItem>
               ))}
-            </div>
-          </CardContent>
-        </Card>
+            </CarouselContent>
+            <CarouselPrevious className="left-4" />
+            <CarouselNext className="right-4" />
+          </Carousel>
+        </section>
       </div>
     </Layout>
   );
