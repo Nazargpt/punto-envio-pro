@@ -530,7 +530,7 @@ const CrearOrden = () => {
                             </div>
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem value="agencia" id="entrega-agencia" />
-                              <Label htmlFor="entrega-agencia">Entrega en Agencia destino</Label>
+                              <Label htmlFor="entrega-agencia">Retiro en Agencia de Destino</Label>
                             </div>
                           </RadioGroup>
                         </FormControl>
