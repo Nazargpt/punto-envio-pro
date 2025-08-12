@@ -522,6 +522,53 @@ export type Database = {
           },
         ]
       }
+      servicios_transportistas: {
+        Row: {
+          activo: boolean
+          created_at: string
+          id: string
+          multiplicador: number
+          peso_maximo: number
+          peso_minimo: number
+          precio_adicional: number
+          tipo_servicio: string
+          transportista_id: string
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          id?: string
+          multiplicador?: number
+          peso_maximo?: number
+          peso_minimo?: number
+          precio_adicional?: number
+          tipo_servicio: string
+          transportista_id: string
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          id?: string
+          multiplicador?: number
+          peso_maximo?: number
+          peso_minimo?: number
+          precio_adicional?: number
+          tipo_servicio?: string
+          transportista_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "servicios_transportistas_transportista_id_fkey"
+            columns: ["transportista_id"]
+            isOneToOne: false
+            referencedRelation: "transportistas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tarifas: {
         Row: {
           activo: boolean | null

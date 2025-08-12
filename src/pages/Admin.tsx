@@ -63,6 +63,26 @@ const Admin: React.FC = () => {
         </Card>
       </div>
 
+      {/* Servicios Transportistas Card */}
+      <Card className="hover:shadow-lg transition-shadow">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calculator className="h-5 w-5" />
+            Servicios de Transportistas
+          </CardTitle>
+          <CardDescription>
+            Configura precios de servicios por peso y tipo
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Link to="/admin/servicios-transportistas">
+            <Button className="w-full">
+              Gestionar Servicios
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+
       {/* Main Management Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Agencias Management */}

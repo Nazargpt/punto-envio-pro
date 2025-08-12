@@ -69,6 +69,7 @@ interface Cotizacion {
   seguro: number;
   cargosAdministrativos: number;
   termosellado: number;
+  serviciosTransportista: number;
   subtotal: number;
   iva: number;
   total: number;
@@ -214,12 +215,55 @@ const Cotizador = () => {
       const ajustePorPeso = pesoKg > 5 ? Math.ceil((pesoKg - 5) / 5) * 500 : 0;
       flete += ajustePorPeso;
 
+      // Calcular servicios de transportista
+      let serviciosTransportista = 0;
+      
+      // Determinar servicios según tipo de recolección y entrega
+      const serviciosRequeridos = [];
+      if (tipoRecoleccion === 'domicilio') {
+        serviciosRequeridos.push('retiro_domicilio');
+      } else {
+        serviciosRequeridos.push('entrega_agencia_origen');
+      }
+      
+      if (tipoEntrega === 'domicilio') {
+        serviciosRequeridos.push('entrega_domicilio');
+      } else {
+        serviciosRequeridos.push('retiro_agencia_destino');
+      }
+
+      // Obtener precios de servicios para el peso específico
+      for (const servicio of serviciosRequeridos) {
+        const { data: servicioData, error: servicioError } = await supabase
+          .from('servicios_transportistas')
+          .select('precio_adicional, multiplicador')
+          .eq('tipo_servicio', servicio)
+          .lte('peso_minimo', pesoKg)
+          .gte('peso_maximo', pesoKg)
+          .eq('activo', true)
+          .limit(1)
+          .single();
+
+        if (servicioData && !servicioError) {
+          serviciosTransportista += servicioData.precio_adicional * servicioData.multiplicador;
+        } else {
+          // Precios por defecto si no hay configuración específica
+          const preciosDefecto = {
+            'retiro_domicilio': pesoKg <= 5 ? 500 : Math.ceil(pesoKg / 5) * 250,
+            'entrega_domicilio': pesoKg <= 5 ? 600 : Math.ceil(pesoKg / 5) * 300,
+            'entrega_agencia_origen': pesoKg <= 5 ? 200 : Math.ceil(pesoKg / 5) * 100,
+            'retiro_agencia_destino': pesoKg <= 5 ? 250 : Math.ceil(pesoKg / 5) * 125,
+          };
+          serviciosTransportista += preciosDefecto[servicio] || 0;
+        }
+      }
+
       // Cálculos de la cotización
       const seguro = valorDeclarado * 0.1; // 10% del valor declarado
       const cargosAdministrativos = flete * 0.15; // 15% del flete
       const costoTermosellado = termosellado ? Math.min(flete * 0.25, flete * 0.25) : 0; // máximo 25% del flete
       
-      const subtotal = flete + seguro + cargosAdministrativos + costoTermosellado;
+      const subtotal = flete + seguro + cargosAdministrativos + costoTermosellado + serviciosTransportista;
       const iva = subtotal * 0.21; // 21% del subtotal
       const total = subtotal + iva;
 
@@ -228,6 +272,7 @@ const Cotizador = () => {
         seguro,
         cargosAdministrativos,
         termosellado: costoTermosellado,
+        serviciosTransportista,
         subtotal,
         iva,
         total
@@ -724,6 +769,10 @@ const Cotizador = () => {
                       <div className="flex justify-between">
                         <span className="text-sm">Flete:</span>
                         <span className="text-sm font-medium">${cotizacion.flete.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm">Servicios Transportista:</span>
+                        <span className="text-sm font-medium">${cotizacion.serviciosTransportista.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm">Seguro (10%):</span>
