@@ -46,9 +46,8 @@ const AppHeader: React.FC = () => {
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo and Brand */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center">
             <img src="/lovable-uploads/ee738c9e-a12c-41a3-b383-9a9759cfa8f3.png" alt="PuntoEnvío" className="h-8" />
-            <h1 className="text-xl font-bold">PuntoEnvío</h1>
           </div>
 
           {/* Navigation Menu */}
