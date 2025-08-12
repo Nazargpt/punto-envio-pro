@@ -180,6 +180,11 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
     try {
       let localidadId = data.localidad_id;
       
+      // Validar que se tenga al menos una localidad (existente o nueva)
+      if (!data.localidad_id && !data.nueva_localidad) {
+        throw new Error('Debe seleccionar una localidad existente o crear una nueva');
+      }
+      
       // Si se está creando una nueva localidad
       if (data.nueva_localidad && !data.localidad_id) {
         localidadId = await crearNuevaLocalidad(data.nueva_localidad, data.codigo_postal);
