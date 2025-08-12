@@ -61,6 +61,32 @@ export const AuthForm: React.FC = () => {
         </CardHeader>
         
         <CardContent className="space-y-4">
+          {/* Dev Mode Admin Access */}
+          <div className="border border-primary/20 bg-primary/5 rounded-lg p-4">
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={loginAsAdmin}
+              disabled={loading}
+            >
+              🔧 Acceso Admin (Desarrollo)
+            </Button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Bypass temporal para desarrollo
+            </p>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <Separator className="w-full" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">
+                O usa autenticación completa
+              </span>
+            </div>
+          </div>
+
           {/* Social Login Buttons */}
           <div className="space-y-2">
             <Button
@@ -148,18 +174,6 @@ export const AuthForm: React.FC = () => {
               }
             </Button>
           </form>
-
-          {/* Dev Mode Admin Access */}
-          <div className="border-t border-border pt-4">
-            <Button
-              variant="secondary"
-              className="w-full"
-              onClick={loginAsAdmin}
-              disabled={loading}
-            >
-              🔧 Acceso Admin (Desarrollo)
-            </Button>
-          </div>
 
           <div className="text-center">
             <Button

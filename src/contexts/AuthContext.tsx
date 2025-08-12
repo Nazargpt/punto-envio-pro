@@ -7,13 +7,13 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isDevMode: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: any }>;
   signInWithGitHub: () => Promise<{ error: any }>;
   loginAsAdmin: () => void;
-  isDevMode: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,7 +33,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isDevMode, setIsDevMode] = useState(false);
   const { toast } = useToast();
 
+  // Create a mock admin user for dev mode
+  const mockAdminUser: User = {
+    id: 'dev-admin-123',
+    aud: 'authenticated',
+    email: 'admin@puntoenvio.dev',
+    user_metadata: {
+      name: 'Administrador Dev',
+      role: 'SUPERADMIN'
+    },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    app_metadata: {},
+    role: 'authenticated',
+    confirmed_at: new Date().toISOString(),
+    email_confirmed_at: new Date().toISOString(),
+    last_sign_in_at: new Date().toISOString()
+  } as User;
+
   useEffect(() => {
+    // Skip Supabase auth in dev mode
+    if (isDevMode) {
+      setUser(mockAdminUser);
+      setSession({} as Session);
+      setLoading(false);
+      return;
+    }
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -51,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isDevMode]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({
@@ -103,6 +129,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    if (isDevMode) {
+      setIsDevMode(false);
+      setUser(null);
+      setSession(null);
+      toast({
+        title: "Modo desarrollo",
+        description: "Se desactivó el modo desarrollo",
+      });
+      return;
+    }
+
     const { error } = await supabase.auth.signOut();
     if (error) {
       toast({
@@ -157,35 +194,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginAsAdmin = () => {
-    // Crear un usuario mock para modo desarrollo
-    const mockUser = {
-      id: 'dev-admin-123',
-      aud: 'authenticated',
-      email: 'admin@puntoenvio.dev',
-      user_metadata: {
-        name: 'Administrador Dev',
-        role: 'SUPERADMIN'
-      },
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      app_metadata: {},
-      role: 'authenticated',
-      confirmed_at: new Date().toISOString(),
-      email_confirmed_at: new Date().toISOString(),
-      last_sign_in_at: new Date().toISOString()
-    } as User;
-
-    const mockSession = {
-      user: mockUser,
-      access_token: 'dev-token',
-      refresh_token: 'dev-refresh',
-      expires_in: 3600,
-      expires_at: Date.now() + 3600000,
-      token_type: 'bearer'
-    } as Session;
-
-    setUser(mockUser);
-    setSession(mockSession);
+    setUser(mockAdminUser);
+    setSession({} as Session);
     setIsDevMode(true);
     
     toast({
@@ -195,16 +205,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const value = {
-    user,
-    session,
+    user: isDevMode ? mockAdminUser : user,
+    session: isDevMode ? ({} as Session) : session,
     loading,
+    isDevMode,
     signIn,
     signUp,
     signOut,
     signInWithGoogle,
     signInWithGitHub,
     loginAsAdmin,
-    isDevMode,
   };
 
   return (
