@@ -77,7 +77,7 @@ const Index = () => {
     <div className="min-h-screen bg-muted/50">
       <main>
         {/* Hero Section with Carousel */}
-        <section className="relative h-[70vh] overflow-hidden -mt-1">
+        <section className="relative h-[70vh] overflow-hidden" style={{ marginTop: '1px' }}>
           <Carousel 
             className="w-full h-full"
             opts={{
