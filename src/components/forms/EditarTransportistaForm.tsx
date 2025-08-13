@@ -266,6 +266,20 @@ export function EditarTransportistaForm({ transportistaId, onSuccess }: EditarTr
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Información básica */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <Label htmlFor="nombre_empresa">Nombre de la Empresa *</Label>
+                <Input
+                  id="nombre_empresa"
+                  {...form.register("nombre_empresa")}
+                  placeholder="Nombre de la empresa transportista"
+                />
+                {form.formState.errors.nombre_empresa && (
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.nombre_empresa.message}
+                  </p>
+                )}
+              </div>
+
               <div>
                 <Label htmlFor="nombre">Nombre *</Label>
                 <Input
@@ -290,20 +304,6 @@ export function EditarTransportistaForm({ transportistaId, onSuccess }: EditarTr
                 {form.formState.errors.apellido && (
                   <p className="text-sm text-destructive mt-1">
                     {form.formState.errors.apellido.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="md:col-span-2">
-                <Label htmlFor="nombre_empresa">Nombre de la Empresa *</Label>
-                <Input
-                  id="nombre_empresa"
-                  {...form.register("nombre_empresa")}
-                  placeholder="Nombre de la empresa transportista"
-                />
-                {form.formState.errors.nombre_empresa && (
-                  <p className="text-sm text-destructive mt-1">
-                    {form.formState.errors.nombre_empresa.message}
                   </p>
                 )}
               </div>
