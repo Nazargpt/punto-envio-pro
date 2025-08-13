@@ -1,6 +1,5 @@
 import React from 'react';
 import Autoplay from 'embla-carousel-autoplay';
-import AppHeader from '@/components/layout/AppHeader';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, Truck, Clock, Shield, MapPin, Users, CheckCircle, Phone } from 'lucide-react';
@@ -74,10 +73,9 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-muted/50">
-      <main>
-        {/* Hero Section with Carousel */}
-        <section className="relative h-[70vh] overflow-hidden" style={{ marginTop: '-24px' }}>
+    <>
+      {/* Hero Section with Carousel */}
+      <section className="relative h-[70vh] overflow-hidden -mt-6">
           <Carousel 
             className="w-full h-full"
             opts={{
@@ -110,11 +108,11 @@ const Index = () => {
             </CarouselContent>
             <CarouselPrevious className="left-4" />
             <CarouselNext className="right-4" />
-          </Carousel>
-        </section>
-        
-        {/* Services Section */}
-        <section className="container mx-auto px-6 py-16">
+        </Carousel>
+      </section>
+      
+      {/* Services Section */}
+      <section className="container mx-auto px-6 py-16">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Nuestros Servicios</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -145,8 +143,7 @@ const Index = () => {
             })}
           </div>
         </section>
-      </main>
-    </div>
+    </>
   );
 };
 
