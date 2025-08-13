@@ -18,7 +18,7 @@ const Transportistas: React.FC = () => {
 
   const mockTransportistasLocales = [
     {
-      id: '1',
+      id: '550e8400-e29b-41d4-a716-446655440000',
       nombre: 'Juan Carlos Méndez',
       cuit: '20-12345678-9',
       telefono: '+54 11 1234-5678',
@@ -30,7 +30,7 @@ const Transportistas: React.FC = () => {
       ordenesCompletadas: 8
     },
     {
-      id: '2',
+      id: '550e8400-e29b-41d4-a716-446655440001',
       nombre: 'María Elena Vásquez',
       cuit: '27-87654321-0',
       telefono: '+54 351 987-6543',
@@ -42,7 +42,7 @@ const Transportistas: React.FC = () => {
       ordenesCompletadas: 8
     },
     {
-      id: '3',
+      id: '550e8400-e29b-41d4-a716-446655440002',
       nombre: 'Roberto Silva',
       cuit: '20-11223344-5',
       telefono: '+54 341 555-0123',
@@ -57,7 +57,7 @@ const Transportistas: React.FC = () => {
 
   const mockTransportistasLD = [
     {
-      id: '1',
+      id: '550e8400-e29b-41d4-a716-446655440003',
       nombre: 'Transportes del Norte S.A.',
       cuit: '30-98765432-1',
       telefono: '+54 11 4567-8901',
@@ -68,7 +68,7 @@ const Transportistas: React.FC = () => {
       frecuencia: 'Diaria'
     },
     {
-      id: '2',
+      id: '550e8400-e29b-41d4-a716-446655440004',
       nombre: 'Logística Sur Ltda.',
       cuit: '33-55667788-9',
       telefono: '+54 11 2345-6789',
@@ -79,7 +79,7 @@ const Transportistas: React.FC = () => {
       frecuencia: '3 veces por semana'
     },
     {
-      id: '3',
+      id: '550e8400-e29b-41d4-a716-446655440005',
       nombre: 'Expresos Patagonia',
       cuit: '30-44556677-8',
       telefono: '+54 11 8765-4321',
