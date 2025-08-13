@@ -16,6 +16,7 @@ import { toast } from "sonner";
 const transportistaSchema = z.object({
   nombre: z.string().min(1, "Nombre es requerido"),
   apellido: z.string().min(1, "Apellido es requerido"),
+  nombre_empresa: z.string().min(1, "Nombre de empresa es requerido"),
   documento: z.string().min(1, "Documento es requerido"),
   email: z.string().email("Email inválido").optional().or(z.literal("")),
   telefono: z.string().optional(),
@@ -113,6 +114,7 @@ export function EditarTransportistaForm({ transportistaId, onSuccess }: EditarTr
         form.reset({
           nombre: transportistaData.nombre,
           apellido: transportistaData.apellido,
+          nombre_empresa: transportistaData.nombre_empresa || "",
           documento: transportistaData.documento,
           email: transportistaData.email || "",
           telefono: transportistaData.telefono || "",
@@ -156,6 +158,7 @@ export function EditarTransportistaForm({ transportistaId, onSuccess }: EditarTr
         .update({
           nombre: data.nombre,
           apellido: data.apellido,
+          nombre_empresa: data.nombre_empresa,
           documento: data.documento,
           email: data.email || null,
           telefono: data.telefono || null,
@@ -287,6 +290,20 @@ export function EditarTransportistaForm({ transportistaId, onSuccess }: EditarTr
                 {form.formState.errors.apellido && (
                   <p className="text-sm text-destructive mt-1">
                     {form.formState.errors.apellido.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
+                <Label htmlFor="nombre_empresa">Nombre de la Empresa *</Label>
+                <Input
+                  id="nombre_empresa"
+                  {...form.register("nombre_empresa")}
+                  placeholder="Nombre de la empresa transportista"
+                />
+                {form.formState.errors.nombre_empresa && (
+                  <p className="text-sm text-destructive mt-1">
+                    {form.formState.errors.nombre_empresa.message}
                   </p>
                 )}
               </div>

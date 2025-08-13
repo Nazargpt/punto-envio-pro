@@ -626,6 +626,7 @@ export type Database = {
           id: string
           licencia_conducir: string | null
           nombre: string
+          nombre_empresa: string | null
           telefono: string | null
           tipo_transportista: string
           updated_at: string | null
@@ -641,6 +642,7 @@ export type Database = {
           id?: string
           licencia_conducir?: string | null
           nombre: string
+          nombre_empresa?: string | null
           telefono?: string | null
           tipo_transportista?: string
           updated_at?: string | null
@@ -656,6 +658,7 @@ export type Database = {
           id?: string
           licencia_conducir?: string | null
           nombre?: string
+          nombre_empresa?: string | null
           telefono?: string | null
           tipo_transportista?: string
           updated_at?: string | null
