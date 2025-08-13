@@ -73,9 +73,9 @@ const Index = () => {
   ];
 
   return (
-    <>
+    <div className="w-full">
       {/* Hero Section with Carousel */}
-      <section className="relative h-[70vh] overflow-hidden -mt-6">
+      <section className="relative h-[70vh] overflow-hidden">
           <Carousel 
             className="w-full h-full"
             opts={{
@@ -143,7 +143,7 @@ const Index = () => {
             })}
           </div>
         </section>
-    </>
+    </div>
   );
 };
 
