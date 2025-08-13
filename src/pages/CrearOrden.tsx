@@ -13,6 +13,8 @@ import { Calendar, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { generatePDF, printPDF, type OrdenData } from '@/utils/pdfGenerator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 const provinciasArgentina = [
   'Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba', 'Corrientes', 
@@ -61,6 +63,8 @@ const CrearOrden = () => {
   const [agenciasOrigen, setAgenciasOrigen] = useState<Agencia[]>([]);
   const [cargandoAgencias, setCargandoAgencias] = useState(false);
   const [enviandoOrden, setEnviandoOrden] = useState(false);
+  const [ordenCreada, setOrdenCreada] = useState<OrdenData | null>(null);
+  const [mostrarDialogoPDF, setMostrarDialogoPDF] = useState(false);
   
   const navigate = useNavigate();
   
@@ -210,7 +214,7 @@ const CrearOrden = () => {
       const { data: nuevaOrden, error } = await supabase
         .from('ordenes_envio')
         .insert(ordenData)
-        .select('numero_orden')
+        .select('*')
         .single();
 
       if (error) {
@@ -221,14 +225,68 @@ const CrearOrden = () => {
 
       toast.success(`Orden creada exitosamente. Número: ${nuevaOrden.numero_orden}`);
       
-      // Redirigir al seguimiento con el número de orden
-      navigate(`/seguimiento?numero=${nuevaOrden.numero_orden}`);
+      // Preparar datos para PDF
+      const ordenParaPDF: OrdenData = {
+        numero_orden: nuevaOrden.numero_orden,
+        remitente_nombre: nuevaOrden.remitente_nombre,
+        remitente_documento: nuevaOrden.remitente_documento,
+        remitente_domicilio: nuevaOrden.remitente_domicilio,
+        remitente_provincia: nuevaOrden.remitente_provincia,
+        remitente_localidad: nuevaOrden.remitente_localidad,
+        destinatario_nombre: nuevaOrden.destinatario_nombre,
+        destinatario_documento: nuevaOrden.destinatario_documento,
+        destinatario_domicilio: nuevaOrden.destinatario_domicilio,
+        destinatario_provincia: nuevaOrden.destinatario_provincia,
+        destinatario_localidad: nuevaOrden.destinatario_localidad,
+        tipo_recoleccion: nuevaOrden.tipo_recoleccion,
+        tipo_entrega: nuevaOrden.tipo_entrega,
+        fecha_recoleccion: nuevaOrden.fecha_recoleccion,
+        hora_recoleccion: nuevaOrden.hora_recoleccion,
+        fecha_entrega: nuevaOrden.fecha_entrega,
+        hora_entrega: nuevaOrden.hora_entrega,
+        estado: nuevaOrden.estado,
+        created_at: nuevaOrden.created_at
+      };
+
+      setOrdenCreada(ordenParaPDF);
+      setMostrarDialogoPDF(true);
       
     } catch (error) {
       console.error('Error:', error);
       toast.error('Error inesperado al crear la orden');
     } finally {
       setEnviandoOrden(false);
+    }
+  };
+
+  const handleGenerarPDF = async () => {
+    if (!ordenCreada) return;
+    
+    try {
+      await generatePDF(ordenCreada);
+      toast.success('PDF generado correctamente');
+    } catch (error) {
+      console.error('Error generando PDF:', error);
+      toast.error('Error al generar PDF');
+    }
+  };
+
+  const handleImprimirPDF = async () => {
+    if (!ordenCreada) return;
+    
+    try {
+      await printPDF(ordenCreada);
+      toast.success('Documento enviado a imprimir');
+    } catch (error) {
+      console.error('Error imprimiendo PDF:', error);
+      toast.error('Error al imprimir documento');
+    }
+  };
+
+  const handleContinuar = () => {
+    setMostrarDialogoPDF(false);
+    if (ordenCreada) {
+      navigate(`/seguimiento?numero=${ordenCreada.numero_orden}`);
     }
   };
 
@@ -682,6 +740,40 @@ const CrearOrden = () => {
             </div>
           </form>
         </Form>
+
+        {/* Diálogo para generar/imprimir PDF */}
+        <Dialog open={mostrarDialogoPDF} onOpenChange={setMostrarDialogoPDF}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>¡Orden creada exitosamente!</DialogTitle>
+              <DialogDescription>
+                Su orden {ordenCreada?.numero_orden} ha sido creada. ¿Desea generar o imprimir el comprobante?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 mt-4">
+              <Button 
+                onClick={handleGenerarPDF}
+                variant="outline"
+                className="w-full"
+              >
+                📄 Descargar PDF
+              </Button>
+              <Button 
+                onClick={handleImprimirPDF}
+                variant="outline"
+                className="w-full"
+              >
+                🖨️ Imprimir comprobante
+              </Button>
+              <Button 
+                onClick={handleContinuar}
+                className="w-full"
+              >
+                Continuar al seguimiento
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
