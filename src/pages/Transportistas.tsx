@@ -5,12 +5,16 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { Users, Plus, Search, Truck, MapPin, Phone, Mail } from 'lucide-react';
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Users, Plus, Search, Truck, MapPin, Phone, Mail, Eye, Edit } from 'lucide-react';
 import { CrearTransportistaForm } from '@/components/forms/CrearTransportistaForm';
+import { VerPerfilTransportista } from '@/components/forms/VerPerfilTransportista';
+import { EditarTransportistaForm } from '@/components/forms/EditarTransportistaForm';
 
 const Transportistas: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTransportistaId, setSelectedTransportistaId] = useState<string | null>(null);
+  const [dialogType, setDialogType] = useState<'perfil' | 'editar' | null>(null);
 
   const mockTransportistasLocales = [
     {
@@ -95,6 +99,21 @@ const Transportistas: React.FC = () => {
   const filteredLD = mockTransportistasLD.filter(t =>
     t.nombre.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  const handleVerPerfil = (transportistaId: string) => {
+    setSelectedTransportistaId(transportistaId);
+    setDialogType('perfil');
+  };
+
+  const handleEditar = (transportistaId: string) => {
+    setSelectedTransportistaId(transportistaId);
+    setDialogType('editar');
+  };
+
+  const closeDialog = () => {
+    setSelectedTransportistaId(null);
+    setDialogType(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -225,8 +244,22 @@ const Transportistas: React.FC = () => {
                         </Badge>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">Ver Perfil</Button>
-                        <Button variant="outline" size="sm">Editar</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleVerPerfil(transportista.id)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ver Perfil
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditar(transportista.id)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
                       </div>
                     </div>
                     
@@ -353,6 +386,32 @@ const Transportistas: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Dialogs */}
+      <Dialog open={dialogType === 'perfil'} onOpenChange={closeDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Perfil del Transportista</DialogTitle>
+          </DialogHeader>
+          {selectedTransportistaId && (
+            <VerPerfilTransportista transportistaId={selectedTransportistaId} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={dialogType === 'editar'} onOpenChange={closeDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Transportista</DialogTitle>
+          </DialogHeader>
+          {selectedTransportistaId && (
+            <EditarTransportistaForm 
+              transportistaId={selectedTransportistaId}
+              onSuccess={closeDialog}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
