@@ -333,8 +333,22 @@ const Transportistas: React.FC = () => {
                         </Badge>
                       </div>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">Ver Perfil</Button>
-                        <Button variant="outline" size="sm">Editar</Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleVerPerfil(empresa.id)}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ver Perfil
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleEditar(empresa.id)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
                       </div>
                     </div>
                     
