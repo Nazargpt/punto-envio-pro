@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Users, Plus, Search, Truck, MapPin, Phone, Mail } from 'lucide-react';
-import { TransportistaForm } from '@/components/forms/TransportistaForm';
+import { CrearTransportistaForm } from '@/components/forms/CrearTransportistaForm';
 
 const Transportistas: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -112,7 +112,7 @@ const Transportistas: React.FC = () => {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <TransportistaForm />
+            <CrearTransportistaForm />
           </DialogContent>
         </Dialog>
       </div>
