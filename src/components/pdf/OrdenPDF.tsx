@@ -21,6 +21,19 @@ interface OrdenPDFProps {
     hora_entrega?: string;
     estado: string;
     created_at: string;
+    // Cálculos monetarios
+    flete?: number;
+    seguro?: number;
+    cargosAdministrativos?: number;
+    serviciosTransportista?: number;
+    costoTermosellado?: number;
+    subtotal?: number;
+    iva?: number;
+    total?: number;
+    cotaPeso?: string;
+    valorDeclarado?: string;
+    descripcionPaquete?: string;
+    termosellado?: boolean;
   };
 }
 
@@ -88,6 +101,66 @@ const OrdenPDF: React.FC<OrdenPDFProps> = ({ orden }) => {
           <p><strong>Estado:</strong> <span className="uppercase">{orden.estado}</span></p>
         </div>
       </div>
+
+      {/* Información del Paquete */}
+      {(orden.cotaPeso || orden.valorDeclarado || orden.descripcionPaquete) && (
+        <div className="border border-gray-300 p-4 mb-6">
+          <h3 className="font-bold text-gray-800 mb-3 bg-gray-100 p-2 -m-4 mb-4">INFORMACIÓN DEL PAQUETE</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              {orden.descripcionPaquete && <p><strong>Descripción:</strong> {orden.descripcionPaquete}</p>}
+              {orden.cotaPeso && <p><strong>Peso:</strong> {orden.cotaPeso} kg</p>}
+            </div>
+            <div>
+              {orden.valorDeclarado && <p><strong>Valor Declarado:</strong> ${parseFloat(orden.valorDeclarado).toLocaleString()}</p>}
+              {orden.termosellado && <p><strong>Termosellado:</strong> Sí</p>}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resumen de Costos */}
+      {orden.total && (
+        <div className="border border-gray-300 p-4 mb-6">
+          <h3 className="font-bold text-gray-800 mb-3 bg-gray-100 p-2 -m-4 mb-4">RESUMEN DE COSTOS</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between border-b pb-1">
+              <span><strong>Flete:</strong></span>
+              <span>${orden.flete?.toLocaleString() || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between border-b pb-1">
+              <span><strong>Seguro:</strong></span>
+              <span>${orden.seguro?.toLocaleString() || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between border-b pb-1">
+              <span><strong>Cargos Administrativos:</strong></span>
+              <span>${orden.cargosAdministrativos?.toLocaleString() || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between border-b pb-1">
+              <span><strong>Servicios Transportista:</strong></span>
+              <span>${orden.serviciosTransportista?.toLocaleString() || 'N/A'}</span>
+            </div>
+            {orden.costoTermosellado && (
+              <div className="flex justify-between border-b pb-1">
+                <span><strong>Termosellado:</strong></span>
+                <span>${orden.costoTermosellado.toLocaleString()}</span>
+              </div>
+            )}
+            <div className="flex justify-between border-b-2 border-gray-400 pb-2 pt-1">
+              <span><strong>Subtotal:</strong></span>
+              <span><strong>${orden.subtotal?.toLocaleString() || 'N/A'}</strong></span>
+            </div>
+            <div className="flex justify-between border-b pb-1">
+              <span><strong>IVA (21%):</strong></span>
+              <span>${orden.iva?.toLocaleString() || 'N/A'}</span>
+            </div>
+            <div className="flex justify-between bg-blue-50 p-2 rounded font-bold text-lg">
+              <span>TOTAL:</span>
+              <span>${orden.total.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Términos y condiciones */}
       <div className="border border-gray-300 p-4 mb-6 text-xs">

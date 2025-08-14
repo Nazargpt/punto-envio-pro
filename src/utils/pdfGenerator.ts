@@ -21,6 +21,19 @@ export interface OrdenData {
   hora_entrega?: string;
   estado: string;
   created_at: string;
+  // Cálculos monetarios
+  flete?: number;
+  seguro?: number;
+  cargosAdministrativos?: number;
+  serviciosTransportista?: number;
+  costoTermosellado?: number;
+  subtotal?: number;
+  iva?: number;
+  total?: number;
+  cotaPeso?: string;
+  valorDeclarado?: string;
+  descripcionPaquete?: string;
+  termosellado?: boolean;
 }
 
 export const generatePDF = async (orden: OrdenData): Promise<void> => {
@@ -87,6 +100,66 @@ export const generatePDF = async (orden: OrdenData): Promise<void> => {
           <p style="margin: 5px 0;"><strong>Estado:</strong> <span style="text-transform: uppercase;">${orden.estado}</span></p>
         </div>
       </div>
+
+      <!-- Información del Paquete -->
+      ${orden.cotaPeso || orden.valorDeclarado || orden.descripcionPaquete ? `
+      <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 30px;">
+        <h3 style="font-weight: bold; margin: 0 0 15px 0; background: #f5f5f5; padding: 10px; margin: -15px -15px 15px -15px;">INFORMACIÓN DEL PAQUETE</h3>
+        <div style="display: flex; gap: 20px;">
+          <div style="flex: 1;">
+            ${orden.descripcionPaquete ? `<p style="margin: 5px 0;"><strong>Descripción:</strong> ${orden.descripcionPaquete}</p>` : ''}
+            ${orden.cotaPeso ? `<p style="margin: 5px 0;"><strong>Peso:</strong> ${orden.cotaPeso} kg</p>` : ''}
+          </div>
+          <div style="flex: 1;">
+            ${orden.valorDeclarado ? `<p style="margin: 5px 0;"><strong>Valor Declarado:</strong> $${parseFloat(orden.valorDeclarado).toLocaleString()}</p>` : ''}
+            ${orden.termosellado ? `<p style="margin: 5px 0;"><strong>Termosellado:</strong> Sí</p>` : ''}
+          </div>
+        </div>
+      </div>
+      ` : ''}
+
+      <!-- Resumen de Costos -->
+      ${orden.total ? `
+      <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 30px;">
+        <h3 style="font-weight: bold; margin: 0 0 15px 0; background: #f5f5f5; padding: 10px; margin: -15px -15px 15px -15px;">RESUMEN DE COSTOS</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee;"><strong>Flete:</strong></td>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.flete?.toLocaleString() || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee;"><strong>Seguro:</strong></td>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.seguro?.toLocaleString() || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee;"><strong>Cargos Administrativos:</strong></td>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.cargosAdministrativos?.toLocaleString() || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee;"><strong>Servicios Transportista:</strong></td>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.serviciosTransportista?.toLocaleString() || 'N/A'}</td>
+          </tr>
+          ${orden.costoTermosellado ? `
+          <tr>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee;"><strong>Termosellado:</strong></td>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.costoTermosellado.toLocaleString()}</td>
+          </tr>
+          ` : ''}
+          <tr>
+            <td style="padding: 8px 0; border-bottom: 2px solid #333;"><strong>Subtotal:</strong></td>
+            <td style="padding: 8px 0; border-bottom: 2px solid #333; text-align: right;"><strong>$${orden.subtotal?.toLocaleString() || 'N/A'}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee;"><strong>IVA (21%):</strong></td>
+            <td style="padding: 5px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.iva?.toLocaleString() || 'N/A'}</td>
+          </tr>
+          <tr style="background: #f0f8ff;">
+            <td style="padding: 10px 0; font-size: 16px;"><strong>TOTAL:</strong></td>
+            <td style="padding: 10px 0; text-align: right; font-size: 16px;"><strong>$${orden.total.toLocaleString()}</strong></td>
+          </tr>
+        </table>
+      </div>
+      ` : ''}
 
       <!-- Términos y condiciones -->
       <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 30px; font-size: 10px;">
@@ -215,6 +288,68 @@ export const printPDF = async (orden: OrdenData): Promise<void> => {
         </table>
         <p style="margin: 15px 0 5px 0;"><strong>Estado:</strong> <span style="text-transform: uppercase;">${orden.estado}</span></p>
       </div>
+
+      <!-- Información del Paquete para impresión -->
+      ${orden.cotaPeso || orden.valorDeclarado || orden.descripcionPaquete ? `
+      <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 30px;">
+        <h3 style="font-weight: bold; margin: 0 0 15px 0; background: #f5f5f5; padding: 10px; margin: -15px -15px 15px -15px;">INFORMACIÓN DEL PAQUETE</h3>
+        <table style="width: 100%;">
+          <tr>
+            <td style="width: 50%; vertical-align: top;">
+              ${orden.descripcionPaquete ? `<p style="margin: 5px 0;"><strong>Descripción:</strong> ${orden.descripcionPaquete}</p>` : ''}
+              ${orden.cotaPeso ? `<p style="margin: 5px 0;"><strong>Peso:</strong> ${orden.cotaPeso} kg</p>` : ''}
+            </td>
+            <td style="width: 50%; vertical-align: top;">
+              ${orden.valorDeclarado ? `<p style="margin: 5px 0;"><strong>Valor Declarado:</strong> $${parseFloat(orden.valorDeclarado).toLocaleString()}</p>` : ''}
+              ${orden.termosellado ? `<p style="margin: 5px 0;"><strong>Termosellado:</strong> Sí</p>` : ''}
+            </td>
+          </tr>
+        </table>
+      </div>
+      ` : ''}
+
+      <!-- Resumen de Costos para impresión -->
+      ${orden.total ? `
+      <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 30px;">
+        <h3 style="font-weight: bold; margin: 0 0 15px 0; background: #f5f5f5; padding: 10px; margin: -15px -15px 15px -15px;">RESUMEN DE COSTOS</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee;"><strong>Flete:</strong></td>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.flete?.toLocaleString() || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee;"><strong>Seguro:</strong></td>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.seguro?.toLocaleString() || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee;"><strong>Cargos Administrativos:</strong></td>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.cargosAdministrativos?.toLocaleString() || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee;"><strong>Servicios Transportista:</strong></td>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.serviciosTransportista?.toLocaleString() || 'N/A'}</td>
+          </tr>
+          ${orden.costoTermosellado ? `
+          <tr>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee;"><strong>Termosellado:</strong></td>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.costoTermosellado.toLocaleString()}</td>
+          </tr>
+          ` : ''}
+          <tr>
+            <td style="padding: 5px 0; border-bottom: 2px solid #333;"><strong>Subtotal:</strong></td>
+            <td style="padding: 5px 0; border-bottom: 2px solid #333; text-align: right;"><strong>$${orden.subtotal?.toLocaleString() || 'N/A'}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee;"><strong>IVA (21%):</strong></td>
+            <td style="padding: 3px 0; border-bottom: 1px solid #eee; text-align: right;">$${orden.iva?.toLocaleString() || 'N/A'}</td>
+          </tr>
+          <tr style="background: #f0f8ff;">
+            <td style="padding: 8px 0; font-size: 14px;"><strong>TOTAL:</strong></td>
+            <td style="padding: 8px 0; text-align: right; font-size: 14px;"><strong>$${orden.total.toLocaleString()}</strong></td>
+          </tr>
+        </table>
+      </div>
+      ` : ''}
     </div>
   `;
 

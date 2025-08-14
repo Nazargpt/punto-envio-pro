@@ -50,6 +50,22 @@ const ordenSchema = z.object({
   horaEntrega: z.string().optional(),
   tipoEntrega: z.enum(['domicilio', 'agencia']),
   agenciaDestinoId: z.string().optional(),
+
+  // Paquete y costos
+  cotaPeso: z.string().optional(),
+  valorDeclarado: z.string().optional(),
+  descripcionPaquete: z.string().optional(),
+  termosellado: z.boolean().optional(),
+  
+  // Cálculos monetarios
+  flete: z.number().optional(),
+  seguro: z.number().optional(),
+  cargosAdministrativos: z.number().optional(),
+  serviciosTransportista: z.number().optional(),
+  costoTermosellado: z.number().optional(),
+  subtotal: z.number().optional(),
+  iva: z.number().optional(),
+  total: z.number().optional(),
 });
 
 interface Agencia {
@@ -101,6 +117,15 @@ const CrearOrden = () => {
       horaEntrega: urlParams.get('horaEntrega') || '',
       tipoEntrega: (urlParams.get('tipoEntrega') as 'domicilio' | 'agencia') || 'domicilio',
       agenciaDestinoId: urlParams.get('agenciaDestinoId') || '',
+
+      // Pre-fill cotizador data
+      cotaPeso: urlParams.get('cotaPeso') || '',
+      valorDeclarado: urlParams.get('valorDeclarado') || '',
+      descripcionPaquete: urlParams.get('descripcionPaquete') || '',
+      termosellado: urlParams.get('termosellado') === 'true',
+      
+      // Pre-fill cotización total if available
+      total: urlParams.get('cotizacionTotal') ? parseFloat(urlParams.get('cotizacionTotal')!) : undefined,
     },
   });
 
@@ -275,7 +300,20 @@ const CrearOrden = () => {
         fecha_entrega: nuevaOrden.fecha_entrega,
         hora_entrega: nuevaOrden.hora_entrega,
         estado: nuevaOrden.estado,
-        created_at: nuevaOrden.created_at
+        created_at: nuevaOrden.created_at,
+        // Incluir datos del paquete y cálculos
+        cotaPeso: data.cotaPeso,
+        valorDeclarado: data.valorDeclarado,
+        descripcionPaquete: data.descripcionPaquete,
+        termosellado: data.termosellado,
+        flete: data.flete,
+        seguro: data.seguro,
+        cargosAdministrativos: data.cargosAdministrativos,
+        serviciosTransportista: data.serviciosTransportista,
+        costoTermosellado: data.costoTermosellado,
+        subtotal: data.subtotal,
+        iva: data.iva,
+        total: data.total,
       };
 
       setOrdenCreada(ordenParaPDF);
@@ -776,8 +814,63 @@ const CrearOrden = () => {
               </Card>
             </div>
 
+            {/* Sección de Cálculos Monetarios */}
+            {form.watch('total') && (
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    💰 Resumen de Costos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Flete:</span>
+                        <span>${form.watch('flete')?.toLocaleString() || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Seguro:</span>
+                        <span>${form.watch('seguro')?.toLocaleString() || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Cargos Administrativos:</span>
+                        <span>${form.watch('cargosAdministrativos')?.toLocaleString() || 'N/A'}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>Servicios Transportista:</span>
+                        <span>${form.watch('serviciosTransportista')?.toLocaleString() || 'N/A'}</span>
+                      </div>
+                      {form.watch('costoTermosellado') && (
+                        <div className="flex justify-between">
+                          <span>Termosellado:</span>
+                          <span>${form.watch('costoTermosellado')?.toLocaleString()}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-sm">
+                        <span>Subtotal:</span>
+                        <span>${form.watch('subtotal')?.toLocaleString() || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>IVA (21%):</span>
+                        <span>${form.watch('iva')?.toLocaleString() || 'N/A'}</span>
+                      </div>
+                      <div className="border-t pt-2">
+                        <div className="flex justify-between font-bold text-lg">
+                          <span>Total:</span>
+                          <span>${form.watch('total')?.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Botones de acción */}
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-end gap-4 mt-6">
               <Button type="button" variant="outline">
                 Cancelar
               </Button>
