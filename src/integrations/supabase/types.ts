@@ -1046,6 +1046,15 @@ export type Database = {
         }
         Returns: boolean
       }
+      log_order_access: {
+        Args: {
+          p_order_id: string
+          p_orden_numero: string
+          p_access_type: string
+          p_accessed_fields?: string[]
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:
