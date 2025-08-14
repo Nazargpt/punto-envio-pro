@@ -104,22 +104,6 @@ const Index = () => {
                      <div className="text-center text-white space-y-4 max-w-2xl px-6">
                        <h1 className="text-4xl md:text-6xl font-bold">{image.title}</h1>
                        <p className="text-lg md:text-xl text-white/90">{image.description}</p>
-                       {!user && (
-                         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
-                           <Link to="/auth">
-                             <Button size="lg" className="bg-primary hover:bg-primary/90 text-white px-8">
-                               <LogIn className="mr-2 h-5 w-5" />
-                               Iniciar Sesión
-                             </Button>
-                           </Link>
-                           <Link to="/auth">
-                             <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black px-8">
-                               <UserPlus className="mr-2 h-5 w-5" />
-                               Registrarse
-                             </Button>
-                           </Link>
-                         </div>
-                       )}
                      </div>
                     </div>
                   </div>
