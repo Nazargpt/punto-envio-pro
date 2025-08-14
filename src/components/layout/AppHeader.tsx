@@ -67,40 +67,36 @@ const AppHeader: React.FC = () => {
               );
             })}
 
-            {/* Admin buttons - only show if user is authenticated and has admin role */}
-            {user && isAdmin() && (
-              <>
-                <Link to="/admin/agencias">
-                  <Button 
-                    size="sm" 
-                    className="bg-blue-600 hover:bg-blue-700 text-white h-7 px-2 text-xs"
-                  >
-                    <Building2 className="mr-1 h-3 w-3" />
-                    <span className="hidden md:inline">Agencias</span>
-                  </Button>
-                </Link>
-                
-                <Link to="/transportistas">
-                  <Button 
-                    size="sm" 
-                    className="bg-orange-600 hover:bg-orange-700 text-white h-7 px-2 text-xs"
-                  >
-                    <Truck className="mr-1 h-3 w-3" />
-                    <span className="hidden md:inline">Transportistas</span>
-                  </Button>
-                </Link>
-                
-                <Link to="/admin">
-                  <Button 
-                    size="sm" 
-                    className="bg-green-600 hover:bg-green-700 text-white h-7 px-2 text-xs"
-                  >
-                    <Shield className="mr-1 h-3 w-3" />
-                    <span className="hidden md:inline">Admin</span>
-                  </Button>
-                </Link>
-              </>
-            )}
+            {/* Admin buttons - always show, redirect to login if not authenticated */}
+            <Link to={user && isAdmin() ? "/admin/agencias" : "/auth"}>
+              <Button 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700 text-white h-7 px-2 text-xs"
+              >
+                <Building2 className="mr-1 h-3 w-3" />
+                <span className="hidden md:inline">Agencias</span>
+              </Button>
+            </Link>
+            
+            <Link to={user && isAdmin() ? "/transportistas" : "/auth"}>
+              <Button 
+                size="sm" 
+                className="bg-orange-600 hover:bg-orange-700 text-white h-7 px-2 text-xs"
+              >
+                <Truck className="mr-1 h-3 w-3" />
+                <span className="hidden md:inline">Transportistas</span>
+              </Button>
+            </Link>
+            
+            <Link to={user && isAdmin() ? "/admin" : "/auth"}>
+              <Button 
+                size="sm" 
+                className="bg-green-600 hover:bg-green-700 text-white h-7 px-2 text-xs"
+              >
+                <Shield className="mr-1 h-3 w-3" />
+                <span className="hidden md:inline">Admin</span>
+              </Button>
+            </Link>
 
             {/* Authentication buttons */}
             {user ? (

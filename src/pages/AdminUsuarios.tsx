@@ -4,12 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Users, UserPlus, Search, Edit, Trash2, Shield, Eye } from 'lucide-react';
+import { Users, UserPlus, Search, Edit, Trash2, Shield, Eye, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import UserManagementDialog from '@/components/users/UserManagementDialog';
 
 interface User {
   id: string;
@@ -17,7 +16,7 @@ interface User {
   nombre: string;
   activo: boolean;
   agencia_id?: string;
-  roles?: string[];
+  role?: string;
   created_at: string;
 }
 
@@ -25,6 +24,10 @@ const AdminUsuarios: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -42,7 +45,10 @@ const AdminUsuarios: React.FC = () => {
           nombre,
           activo,
           agencia_id,
-          created_at
+          created_at,
+          user_roles (
+            role
+          )
         `);
 
       if (error) throw error;
@@ -53,6 +59,7 @@ const AdminUsuarios: React.FC = () => {
         nombre: profile.nombre || '',
         activo: profile.activo || false,
         agencia_id: profile.agencia_id,
+        role: (profile.user_roles as any)?.[0]?.role || 'USER',
         created_at: profile.created_at
       })) || []);
     } catch (error) {
@@ -67,10 +74,12 @@ const AdminUsuarios: React.FC = () => {
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
 
   const handleToggleUserStatus = async (userId: string, currentStatus: boolean) => {
     try {
@@ -107,43 +116,16 @@ const AdminUsuarios: React.FC = () => {
             <p className="text-muted-foreground">Administra usuarios del sistema y sus permisos</p>
           </div>
         </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Nuevo Usuario
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" placeholder="usuario@ejemplo.com" />
-              </div>
-              <div>
-                <Label htmlFor="nombre">Nombre Completo</Label>
-                <Input id="nombre" placeholder="Nombre del usuario" />
-              </div>
-              <div>
-                <Label htmlFor="role">Rol</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar rol" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USER">Usuario</SelectItem>
-                    <SelectItem value="ADMIN">Administrador</SelectItem>
-                    <SelectItem value="SUPERADMIN">Super Administrador</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button className="w-full">Crear Usuario</Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Button
+          onClick={() => {
+            setSelectedUser(null);
+            setIsEditMode(false);
+            setDialogOpen(true);
+          }}
+        >
+          <UserPlus className="mr-2 h-4 w-4" />
+          Nuevo Usuario
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -176,7 +158,9 @@ const AdminUsuarios: React.FC = () => {
             <Shield className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">
+              {users.filter(u => u.role && ['ADMIN_AGENCIA', 'SUPERADMIN'].includes(u.role)).length}
+            </div>
             <p className="text-xs text-muted-foreground">con permisos admin</p>
           </CardContent>
         </Card>
@@ -187,7 +171,14 @@ const AdminUsuarios: React.FC = () => {
             <UserPlus className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">5</div>
+            <div className="text-2xl font-bold">
+              {users.filter(u => {
+                const createdAt = new Date(u.created_at);
+                const now = new Date();
+                const thisMonth = now.getMonth() === createdAt.getMonth() && now.getFullYear() === createdAt.getFullYear();
+                return thisMonth;
+              }).length}
+            </div>
             <p className="text-xs text-muted-foreground">registrados</p>
           </CardContent>
         </Card>
@@ -210,14 +201,14 @@ const AdminUsuarios: React.FC = () => {
                 className="pl-8"
               />
             </div>
-            <Select>
+            <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Filtrar por rol" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los roles</SelectItem>
                 <SelectItem value="USER">Usuario</SelectItem>
-                <SelectItem value="ADMIN">Administrador</SelectItem>
+                <SelectItem value="ADMIN_AGENCIA">Admin Agencia</SelectItem>
                 <SelectItem value="SUPERADMIN">Super Admin</SelectItem>
               </SelectContent>
             </Select>
@@ -228,6 +219,7 @@ const AdminUsuarios: React.FC = () => {
               <TableRow>
                 <TableHead>Usuario</TableHead>
                 <TableHead>Email</TableHead>
+                <TableHead>Rol</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Agencia</TableHead>
                 <TableHead>Fecha Registro</TableHead>
@@ -237,13 +229,22 @@ const AdminUsuarios: React.FC = () => {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">Cargando usuarios...</TableCell>
+                  <TableCell colSpan={7} className="text-center">Cargando usuarios...</TableCell>
                 </TableRow>
               ) : (
                 filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.nombre || 'Sin nombre'}</TableCell>
                     <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <Badge variant={
+                        user.role === 'SUPERADMIN' ? 'destructive' :
+                        user.role === 'ADMIN_AGENCIA' ? 'default' : 'secondary'
+                      }>
+                        {user.role === 'SUPERADMIN' ? 'Super Admin' :
+                         user.role === 'ADMIN_AGENCIA' ? 'Admin Agencia' : 'Usuario'}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <Badge variant={user.activo ? "default" : "secondary"}>
                         {user.activo ? 'Activo' : 'Inactivo'}
@@ -253,11 +254,16 @@ const AdminUsuarios: React.FC = () => {
                     <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Edit className="h-4 w-4" />
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser(user);
+                            setIsEditMode(true);
+                            setDialogOpen(true);
+                          }}
+                        >
+                          <Settings className="h-4 w-4" />
                         </Button>
                         <Button 
                           variant={user.activo ? "destructive" : "default"} 
@@ -275,6 +281,17 @@ const AdminUsuarios: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <UserManagementDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        user={selectedUser}
+        isEdit={isEditMode}
+        onUserSaved={() => {
+          fetchUsers();
+          setDialogOpen(false);
+        }}
+      />
     </div>
   );
 };
