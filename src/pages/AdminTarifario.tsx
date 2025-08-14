@@ -583,7 +583,7 @@ const AdminTarifario: React.FC = () => {
                                   <SelectTrigger className="h-8 text-xs">
                                     <SelectValue />
                                   </SelectTrigger>
-                                  <SelectContent>
+                                  <SelectContent className="z-50 max-h-48">
                                     <SelectItem value="sin-asignar">Sin asignar</SelectItem>
                                     {zonasTarifarias.map(zona => (
                                       <SelectItem key={zona.id} value={zona.id}>
@@ -640,7 +640,7 @@ const AdminTarifario: React.FC = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar provincia..." />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-50 max-h-60">
                       {provincias.map((provincia) => (
                         <SelectItem key={provincia.id} value={provincia.nombre}>
                           {provincia.nombre}
@@ -656,7 +656,7 @@ const AdminTarifario: React.FC = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar provincia..." />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-50 max-h-60">
                       {provincias.map((provincia) => (
                         <SelectItem key={provincia.id} value={provincia.nombre}>
                           {provincia.nombre}
