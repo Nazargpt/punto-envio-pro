@@ -987,6 +987,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_business_analytics_summary: {
+        Args: { date_range_days?: number }
+        Returns: {
+          total_orders: number
+          active_routes: number
+          total_packages: number
+          average_delivery_time: number
+          access_level: string
+        }[]
+      }
       get_orden_with_masking: {
         Args: { orden_id: string }
         Returns: {
