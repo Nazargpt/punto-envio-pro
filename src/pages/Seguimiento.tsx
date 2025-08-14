@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Search, Package, MapPin, Clock, User, Truck, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 interface OrdenEnvio {
   id: string;
@@ -55,6 +55,7 @@ const Seguimiento = () => {
   const [orden, setOrden] = useState<OrdenEnvio | null>(null);
   const [buscando, setBuscando] = useState(false);
   const [noEncontrado, setNoEncontrado] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (searchParams.get('numero')) {
@@ -64,7 +65,11 @@ const Seguimiento = () => {
 
   const buscarOrden = async () => {
     if (!numeroOrden.trim()) {
-      toast.error('Ingrese un número de orden válido');
+      toast({
+        title: "Error",
+        description: "Ingrese un número de orden válido",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -73,22 +78,66 @@ const Seguimiento = () => {
     setOrden(null);
 
     try {
-      const { data, error } = await supabase
+      // Use the secure function for public tracking - no authentication required
+      const { data, error } = await supabase.rpc('get_tracking_info', {
+        order_number: numeroOrden.trim()
+      });
+
+      if (error) {
+        console.error('Error fetching tracking info:', error);
+        throw error;
+      }
+
+      // If we have tracking data, also get basic order info
+      const { data: orderData, error: orderError } = await supabase
         .from('ordenes_envio')
-        .select('*')
+        .select(`
+          numero_orden,
+          estado,
+          remitente_nombre,
+          remitente_localidad,
+          remitente_provincia,
+          destinatario_nombre,
+          destinatario_localidad,
+          destinatario_provincia,
+          created_at
+        `)
         .eq('numero_orden', numeroOrden.trim())
         .single();
 
-      if (error || !data) {
+      if (orderError || !orderData) {
         setNoEncontrado(true);
-        toast.error('No se encontró ninguna orden con ese número');
+        toast({
+          title: "Error",
+          description: "No se encontró ninguna orden con ese número",
+          variant: "destructive"
+        });
       } else {
-        setOrden(data);
-        toast.success('Orden encontrada');
+        // Combine order data with tracking data
+        setOrden({
+          ...orderData,
+          id: '', // Not needed for public tracking
+          remitente_domicilio: '',
+          destinatario_domicilio: '',
+          fecha_recoleccion: '',
+          hora_recoleccion: '',
+          fecha_entrega: '',
+          hora_entrega: '',
+          tipo_recoleccion: '',
+          tipo_entrega: ''
+        });
+        toast({
+          title: "Orden encontrada",
+          description: "Información de seguimiento cargada correctamente"
+        });
       }
     } catch (error) {
       console.error('Error buscando orden:', error);
-      toast.error('Error al buscar la orden');
+      toast({
+        title: "Error",
+        description: "Error al buscar la orden",
+        variant: "destructive"
+      });
       setNoEncontrado(true);
     } finally {
       setBuscando(false);

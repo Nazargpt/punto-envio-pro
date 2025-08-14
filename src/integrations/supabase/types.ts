@@ -907,7 +907,6 @@ export type Database = {
           estado: string
           descripcion: string
           ubicacion: string
-          observaciones: string
         }[]
       }
       get_user_role: {
