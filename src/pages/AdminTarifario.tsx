@@ -137,44 +137,69 @@ const AdminTarifario: React.FC = () => {
     }
   };
 
-  // Cargar tarifas existentes cuando se seleccionan las provincias
+  // Cargar tarifas de zona cuando se seleccionan las provincias
   useEffect(() => {
     if (provinciaOrigen && provinciaDestino) {
-      cargarTarifasExistentes();
+      cargarTarifasDeZona();
     }
-  }, [provinciaOrigen, provinciaDestino]);
+  }, [provinciaOrigen, provinciaDestino, matrizProvincias, zonasTarifarias]);
 
-  const cargarTarifasExistentes = async () => {
+  const cargarTarifasDeZona = async () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
-        .from('tarifas')
-        .select('*')
-        .eq('provincia_origen', provinciaOrigen)
-        .eq('provincia_destino', provinciaDestino);
-
-      if (error) throw error;
-
-      // Crear un mapa de precios existentes
-      const preciosExistentes: {[key: string]: string} = {};
+      // Obtener la zona asignada para esta ruta
+      const zonaId = obtenerZonaParaRuta(provinciaOrigen, provinciaDestino);
       
-      PESO_RANGOS.forEach(rango => {
-        const tarifaExistente = data?.find(t => 
-          t.precio_por_kg === rango.min && 
-          t.precio_por_km === rango.max
-        );
+      if (zonaId) {
+        // Buscar la zona en el estado
+        const zona = zonasTarifarias.find(z => z.id === zonaId);
         
-        const key = `${rango.min}-${rango.max}`;
-        preciosExistentes[key] = tarifaExistente ? tarifaExistente.precio_base.toString() : '';
-      });
+        if (zona) {
+          // Mapear los precios de la zona a los rangos de peso
+          const preciosDeZona: {[key: string]: string} = {
+            '0-5': zona.precio_base_0_5kg.toString(),
+            '5-10': zona.precio_base_5_10kg.toString(),
+            '10-15': zona.precio_base_10_15kg.toString(),
+            '15-20': zona.precio_base_15_20kg.toString(),
+            '20-25': zona.precio_base_20_25kg.toString(),
+          };
+          
+          setPrecios(preciosDeZona);
+        } else {
+          // Si no se encuentra la zona, limpiar precios
+          setPrecios({});
+        }
+      } else {
+        // Si no hay zona asignada, verificar si hay tarifas individuales guardadas
+        const { data, error } = await supabase
+          .from('tarifas')
+          .select('*')
+          .eq('provincia_origen', provinciaOrigen)
+          .eq('provincia_destino', provinciaDestino);
 
-      setPrecios(preciosExistentes);
+        if (error) throw error;
+
+        // Crear un mapa de precios existentes
+        const preciosExistentes: {[key: string]: string} = {};
+        
+        PESO_RANGOS.forEach(rango => {
+          const tarifaExistente = data?.find(t => 
+            t.precio_por_kg === rango.min && 
+            t.precio_por_km === rango.max
+          );
+          
+          const key = `${rango.min}-${rango.max}`;
+          preciosExistentes[key] = tarifaExistente ? tarifaExistente.precio_base.toString() : '';
+        });
+
+        setPrecios(preciosExistentes);
+      }
     } catch (error) {
       console.error('Error cargando tarifas:', error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar las tarifas existentes",
+        description: "No se pudieron cargar las tarifas",
         variant: "destructive"
       });
     } finally {
@@ -668,26 +693,57 @@ const AdminTarifario: React.FC = () => {
           {provinciaOrigen && provinciaDestino && (
             <Card>
               <CardHeader>
-                <CardTitle>Tarifas Individuales por Rango de Peso</CardTitle>
+                <CardTitle>Tarifas por Rango de Peso</CardTitle>
                 <CardDescription>
-                  Define precios específicos para esta ruta (sobrescribe configuración de zona)
+                  {(() => {
+                    const zonaAsignada = obtenerZonaParaRuta(provinciaOrigen, provinciaDestino);
+                    return zonaAsignada 
+                      ? `Precios cargados automáticamente desde: ${obtenerNombreZona(zonaAsignada)}`
+                      : "Configure una zona en la matriz o defina precios individuales";
+                  })()}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  {(() => {
+                    const zonaAsignada = obtenerZonaParaRuta(provinciaOrigen, provinciaDestino);
+                    if (zonaAsignada) {
+                      const zona = zonasTarifarias.find(z => z.id === zonaAsignada);
+                      return (
+                        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="flex items-center gap-2 text-blue-800">
+                            <MapPin className="h-4 w-4" />
+                            <span className="font-medium">Zona: {zona?.nombre}</span>
+                          </div>
+                          <p className="text-sm text-blue-600 mt-1">{zona?.descripcion}</p>
+                          <p className="text-xs text-blue-500 mt-1">
+                            Multiplicador de zona: {zona?.multiplicador}x
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-[200px]">Rango de Peso</TableHead>
-                        <TableHead>Precio (ARS)</TableHead>
-                        <TableHead className="w-[100px]">Estado</TableHead>
+                        <TableHead>Precio Base (ARS)</TableHead>
+                        <TableHead>Precio Final (ARS)</TableHead>
+                        <TableHead className="w-[100px]">Origen</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {PESO_RANGOS.map((rango) => {
                         const key = `${rango.min}-${rango.max}`;
-                        const precio = precios[key] || '';
-                        const tienePrecio = precio && parseFloat(precio) > 0;
+                        const precioBase = precios[key] || '';
+                        const zonaAsignada = obtenerZonaParaRuta(provinciaOrigen, provinciaDestino);
+                        const zona = zonaAsignada ? zonasTarifarias.find(z => z.id === zonaAsignada) : null;
+                        const multiplicador = zona?.multiplicador || 1;
+                        const precioFinal = precioBase ? (parseFloat(precioBase) * multiplicador).toFixed(2) : '';
+                        const tienePrecio = precioBase && parseFloat(precioBase) > 0;
+                        const esDeZona = zonaAsignada && tienePrecio;
 
                         return (
                           <TableRow key={key}>
@@ -700,21 +756,39 @@ const AdminTarifario: React.FC = () => {
                                 <Input
                                   type="number"
                                   placeholder="0.00"
-                                  value={precio}
+                                  value={precioBase}
                                   onChange={(e) => handlePrecioChange(key, e.target.value)}
                                   className="max-w-[150px]"
                                   min="0"
                                   step="0.01"
+                                  disabled={esDeZona}
                                 />
                               </div>
+                              {esDeZona && (
+                                <p className="text-xs text-blue-600 mt-1">
+                                  Valor de zona tarifaria
+                                </p>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <span className="font-medium text-green-600">
+                                {precioFinal ? `$${precioFinal}` : '-'}
+                              </span>
+                              {multiplicador !== 1 && precioFinal && (
+                                <p className="text-xs text-muted-foreground">
+                                  (${precioBase} × {multiplicador})
+                                </p>
+                              )}
                             </TableCell>
                             <TableCell>
                               <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                tienePrecio 
-                                  ? 'bg-green-100 text-green-800' 
+                                esDeZona 
+                                  ? 'bg-blue-100 text-blue-800' 
+                                  : tienePrecio
+                                  ? 'bg-green-100 text-green-800'
                                   : 'bg-gray-100 text-gray-600'
                               }`}>
-                                {tienePrecio ? 'Configurado' : 'Sin precio'}
+                                {esDeZona ? 'Zona' : tienePrecio ? 'Manual' : 'Sin precio'}
                               </div>
                             </TableCell>
                           </TableRow>
