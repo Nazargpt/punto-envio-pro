@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -990,93 +990,93 @@ export type Database = {
       get_business_analytics_summary: {
         Args: { date_range_days?: number }
         Returns: {
-          total_orders: number
-          active_routes: number
-          total_packages: number
-          average_delivery_time: number
           access_level: string
+          active_routes: number
+          average_delivery_time: number
+          total_orders: number
+          total_packages: number
         }[]
       }
       get_orden_with_masking: {
         Args: { orden_id: string }
         Returns: {
-          id: string
-          numero_orden: string
-          estado: string
-          remitente_nombre: string
-          remitente_documento_masked: string
-          remitente_domicilio_masked: string
-          remitente_localidad: string
-          remitente_provincia: string
-          destinatario_nombre: string
+          access_level: string
+          created_at: string
           destinatario_documento_masked: string
           destinatario_domicilio_masked: string
           destinatario_localidad: string
+          destinatario_nombre: string
           destinatario_provincia: string
-          access_level: string
-          created_at: string
+          estado: string
+          id: string
+          numero_orden: string
+          remitente_documento_masked: string
+          remitente_domicilio_masked: string
+          remitente_localidad: string
+          remitente_nombre: string
+          remitente_provincia: string
         }[]
       }
       get_order_public_info: {
         Args: { order_number: string }
         Returns: {
-          numero_orden: string
-          estado: string
-          remitente_nombre_publico: string
-          destinatario_nombre_publico: string
-          remitente_localidad: string
-          destinatario_localidad: string
           created_at: string
+          destinatario_localidad: string
+          destinatario_nombre_publico: string
+          estado: string
+          numero_orden: string
+          remitente_localidad: string
+          remitente_nombre_publico: string
         }[]
       }
       get_tracking_info: {
         Args: { order_number: string }
         Returns: {
-          fecha_hora: string
-          estado: string
           descripcion: string
+          estado: string
+          fecha_hora: string
           ubicacion: string
         }[]
       }
       get_transportista_with_masking: {
         Args: { transportista_id: string }
         Returns: {
-          id: string
-          nombre: string
+          access_level: string
+          activo: boolean
           apellido: string
+          calificacion: number
+          created_at: string
           documento_masked: string
           email_masked: string
-          telefono_masked: string
-          licencia_conducir_masked: string
           fecha_vencimiento_licencia: string
-          tipo_transportista: string
+          id: string
+          licencia_conducir_masked: string
+          nombre: string
           nombre_empresa: string
-          calificacion: number
-          activo: boolean
-          access_level: string
-          created_at: string
+          telefono_masked: string
+          tipo_transportista: string
           updated_at: string
         }[]
       }
       get_transportistas_basic: {
         Args: Record<PropertyKey, never>
         Returns: {
+          activo: boolean
+          apellido: string
+          created_at: string
           id: string
           nombre: string
-          apellido: string
           tipo_transportista: string
-          activo: boolean
-          created_at: string
           updated_at: string
         }[]
       }
       get_transportistas_for_services: {
         Args: Record<PropertyKey, never>
         Returns: {
+          activo: boolean
           id: string
           nombre_completo: string
           tipo_transportista: string
-          activo: boolean
         }[]
       }
       get_user_role: {
@@ -1085,25 +1085,25 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
       log_order_access: {
         Args: {
-          p_order_id: string
-          p_orden_numero: string
           p_access_type: string
           p_accessed_fields?: string[]
+          p_orden_numero: string
+          p_order_id: string
         }
         Returns: undefined
       }
       log_transportista_access: {
         Args: {
-          p_transportista_id: string
           p_access_type: string
           p_accessed_fields?: string[]
+          p_transportista_id: string
         }
         Returns: undefined
       }
@@ -1125,23 +1125,23 @@ export type Database = {
       }
       request_sensitive_data_access: {
         Args: {
-          target_table: string
-          target_record_id: string
-          target_fields: string[]
           business_reason: string
+          target_fields: string[]
+          target_record_id: string
+          target_table: string
         }
         Returns: string
       }
       search_orders_limited: {
         Args: { search_term: string; search_type?: string }
         Returns: {
-          numero_orden: string
-          estado: string
-          remitente_nombre_parcial: string
-          destinatario_nombre_parcial: string
-          remitente_localidad: string
-          destinatario_localidad: string
           created_at: string
+          destinatario_localidad: string
+          destinatario_nombre_parcial: string
+          estado: string
+          numero_orden: string
+          remitente_localidad: string
+          remitente_nombre_parcial: string
         }[]
       }
     }
