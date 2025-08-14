@@ -900,6 +900,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_tracking_info: {
+        Args: { order_number: string }
+        Returns: {
+          fecha_hora: string
+          estado: string
+          descripcion: string
+          ubicacion: string
+          observaciones: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
