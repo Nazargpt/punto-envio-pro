@@ -11,7 +11,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Calendar, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { generatePDF, printPDF, type OrdenData } from '@/utils/pdfGenerator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -67,6 +68,8 @@ const CrearOrden = () => {
   const [mostrarDialogoPDF, setMostrarDialogoPDF] = useState(false);
   
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   
   // Get URL search params to pre-fill form from cotizador
   const urlParams = new URLSearchParams(window.location.search);
@@ -182,8 +185,18 @@ const CrearOrden = () => {
   const onSubmit = async (data: OrdenFormData) => {
     setEnviandoOrden(true);
     try {
-      // Usar un ID fijo para el usuario cuando no hay autenticación
-      const usuarioId = '00000000-0000-0000-0000-000000000001';
+      // Usar el ID del usuario autenticado
+      if (!user) {
+        toast({
+          title: "Error",
+          description: "Debes estar autenticado para crear una orden",
+          variant: "destructive"
+        });
+        navigate('/auth');
+        return;
+      }
+      
+      const usuarioId = user.id;
       // Preparar datos para la base de datos
       const ordenData = {
         numero_orden: '', // Se auto-genera por el trigger
@@ -219,11 +232,18 @@ const CrearOrden = () => {
 
       if (error) {
         console.error('Error creando orden:', error);
-        toast.error('Error al crear la orden: ' + error.message);
+        toast({
+          title: "Error",
+          description: "Error al crear la orden: " + error.message,
+          variant: "destructive"
+        });
         return;
       }
 
-      toast.success(`Orden creada exitosamente. Número: ${nuevaOrden.numero_orden}`);
+      toast({
+        title: "¡Orden creada exitosamente!",
+        description: `Número de orden: ${nuevaOrden.numero_orden}`
+      });
       
       // Preparar datos para PDF
       const ordenParaPDF: OrdenData = {
@@ -253,7 +273,11 @@ const CrearOrden = () => {
       
     } catch (error) {
       console.error('Error:', error);
-      toast.error('Error inesperado al crear la orden');
+      toast({
+        title: "Error",
+        description: "Error inesperado al crear la orden",
+        variant: "destructive"
+      });
     } finally {
       setEnviandoOrden(false);
     }
@@ -264,10 +288,17 @@ const CrearOrden = () => {
     
     try {
       await generatePDF(ordenCreada);
-      toast.success('PDF generado correctamente');
+      toast({
+        title: "PDF generado",
+        description: "El archivo se ha descargado correctamente"
+      });
     } catch (error) {
       console.error('Error generando PDF:', error);
-      toast.error('Error al generar PDF');
+      toast({
+        title: "Error",
+        description: "Error al generar PDF",
+        variant: "destructive"
+      });
     }
   };
 
@@ -276,10 +307,17 @@ const CrearOrden = () => {
     
     try {
       await printPDF(ordenCreada);
-      toast.success('Documento enviado a imprimir');
+      toast({
+        title: "Documento enviado a imprimir",
+        description: "El documento se ha enviado a la impresora"
+      });
     } catch (error) {
       console.error('Error imprimiendo PDF:', error);
-      toast.error('Error al imprimir documento');
+      toast({
+        title: "Error",
+        description: "Error al imprimir documento",
+        variant: "destructive"
+      });
     }
   };
 

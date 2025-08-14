@@ -1,11 +1,13 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Package, Search, Calculator, MapPin, Building2, Truck, Shield } from 'lucide-react';
+import { Package, Search, Calculator, MapPin, Building2, Truck, Shield, LogIn, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 const AppHeader: React.FC = () => {
   const location = useLocation();
+  const { user, signOut, isAdmin, isSuperAdmin } = useAuth();
 
   const navItems = [
     { 
@@ -65,36 +67,63 @@ const AppHeader: React.FC = () => {
               );
             })}
 
-            {/* Three colored buttons */}
-            <Link to="/admin/agencias">
-              <Button 
-                size="sm" 
-                className="bg-blue-600 hover:bg-blue-700 text-white h-7 px-2 text-xs"
+            {/* Admin buttons - only show if user is authenticated and has admin role */}
+            {user && isAdmin() && (
+              <>
+                <Link to="/admin/agencias">
+                  <Button 
+                    size="sm" 
+                    className="bg-blue-600 hover:bg-blue-700 text-white h-7 px-2 text-xs"
+                  >
+                    <Building2 className="mr-1 h-3 w-3" />
+                    <span className="hidden md:inline">Agencias</span>
+                  </Button>
+                </Link>
+                
+                <Link to="/transportistas">
+                  <Button 
+                    size="sm" 
+                    className="bg-orange-600 hover:bg-orange-700 text-white h-7 px-2 text-xs"
+                  >
+                    <Truck className="mr-1 h-3 w-3" />
+                    <span className="hidden md:inline">Transportistas</span>
+                  </Button>
+                </Link>
+                
+                <Link to="/admin">
+                  <Button 
+                    size="sm" 
+                    className="bg-green-600 hover:bg-green-700 text-white h-7 px-2 text-xs"
+                  >
+                    <Shield className="mr-1 h-3 w-3" />
+                    <span className="hidden md:inline">Admin</span>
+                  </Button>
+                </Link>
+              </>
+            )}
+
+            {/* Authentication buttons */}
+            {user ? (
+              <Button
+                onClick={signOut}
+                size="sm"
+                variant="outline"
+                className="h-7 px-2 text-xs border-gray-600 text-white hover:bg-gray-800"
               >
-                <Building2 className="mr-1 h-3 w-3" />
-                <span className="hidden md:inline">Agencias</span>
+                <LogOut className="mr-1 h-3 w-3" />
+                <span className="hidden md:inline">Salir</span>
               </Button>
-            </Link>
-            
-            <Link to="/transportistas">
-              <Button 
-                size="sm" 
-                className="bg-orange-600 hover:bg-orange-700 text-white h-7 px-2 text-xs"
-              >
-                <Truck className="mr-1 h-3 w-3" />
-                <span className="hidden md:inline">Transportistas</span>
-              </Button>
-            </Link>
-            
-            <Link to="/admin">
-              <Button 
-                size="sm" 
-                className="bg-green-600 hover:bg-green-700 text-white h-7 px-2 text-xs"
-              >
-                <Shield className="mr-1 h-3 w-3" />
-                <span className="hidden md:inline">Admin</span>
-              </Button>
-            </Link>
+            ) : (
+              <Link to="/auth">
+                <Button
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90 text-white h-7 px-2 text-xs"
+                >
+                  <LogIn className="mr-1 h-3 w-3" />
+                  <span className="hidden md:inline">Ingresar</span>
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 

@@ -1,13 +1,17 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Autoplay from 'embla-carousel-autoplay';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Truck, Clock, Shield, MapPin, Users, CheckCircle, Phone } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Package, Truck, Clock, Shield, MapPin, Users, CheckCircle, Phone, LogIn, UserPlus } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import heroWarehouse from '@/assets/hero-warehouse.jpg';
 import heroDrivers from '@/assets/hero-drivers.jpg';
 import heroStaff from '@/assets/hero-staff.jpg';
 
 const Index = () => {
+  const { user } = useAuth();
   const heroImages = [
     {
       src: heroWarehouse,
@@ -97,10 +101,26 @@ const Index = () => {
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <div className="text-center text-white space-y-4 max-w-2xl px-6">
-                        <h1 className="text-4xl md:text-6xl font-bold">{image.title}</h1>
-                        <p className="text-lg md:text-xl text-white/90">{image.description}</p>
-                      </div>
+                     <div className="text-center text-white space-y-4 max-w-2xl px-6">
+                       <h1 className="text-4xl md:text-6xl font-bold">{image.title}</h1>
+                       <p className="text-lg md:text-xl text-white/90">{image.description}</p>
+                       {!user && (
+                         <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                           <Link to="/auth">
+                             <Button size="lg" className="bg-primary hover:bg-primary/90 text-white px-8">
+                               <LogIn className="mr-2 h-5 w-5" />
+                               Iniciar Sesión
+                             </Button>
+                           </Link>
+                           <Link to="/auth">
+                             <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-black px-8">
+                               <UserPlus className="mr-2 h-5 w-5" />
+                               Registrarse
+                             </Button>
+                           </Link>
+                         </div>
+                       )}
+                     </div>
                     </div>
                   </div>
                 </CarouselItem>

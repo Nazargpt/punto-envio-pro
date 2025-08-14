@@ -5,7 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import HomeLayout from "@/components/layout/HomeLayout";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
 import Ordenes from "./pages/Ordenes";
 import HojasRuta from "./pages/HojasRuta";
 import Transportistas from "./pages/Transportistas";
@@ -31,26 +34,29 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomeLayout><Index /></HomeLayout>} />
-          <Route path="/cotizador" element={<Layout><Cotizador /></Layout>} />
-          <Route path="/crear-orden" element={<Layout><CrearOrden /></Layout>} />
-          <Route path="/ordenes" element={<Layout><Ordenes /></Layout>} />
-          <Route path="/hojas-ruta" element={<Layout><HojasRuta /></Layout>} />
-          <Route path="/transportistas" element={<Layout><Transportistas /></Layout>} />
-          <Route path="/tarifas" element={<Layout><Tarifas /></Layout>} />
-          <Route path="/incidencias" element={<Layout><Incidencias /></Layout>} />
-          <Route path="/seguimiento" element={<Layout><Seguimiento /></Layout>} />
-          <Route path="/admin" element={<Layout><Admin /></Layout>} />
-          <Route path="/admin/agencias" element={<Layout><Agencias /></Layout>} />
-          <Route path="/admin/usuarios" element={<Layout><AdminUsuarios /></Layout>} />
-          <Route path="/admin/reportes" element={<Layout><AdminReportes /></Layout>} />
-          <Route path="/admin/tarifario" element={<Layout><AdminTarifario /></Layout>} />
-          <Route path="/admin/servicios-transportistas" element={<Layout><ServiciosTransportistas /></Layout>} />
-          <Route path="/admin/configuracion" element={<Layout><AdminConfiguracion /></Layout>} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<Layout><NotFound /></Layout>} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<HomeLayout><Index /></HomeLayout>} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/cotizador" element={<ProtectedRoute><Layout><Cotizador /></Layout></ProtectedRoute>} />
+            <Route path="/crear-orden" element={<ProtectedRoute><Layout><CrearOrden /></Layout></ProtectedRoute>} />
+            <Route path="/ordenes" element={<ProtectedRoute><Layout><Ordenes /></Layout></ProtectedRoute>} />
+            <Route path="/hojas-ruta" element={<ProtectedRoute requireAdmin><Layout><HojasRuta /></Layout></ProtectedRoute>} />
+            <Route path="/transportistas" element={<ProtectedRoute requireAdmin><Layout><Transportistas /></Layout></ProtectedRoute>} />
+            <Route path="/tarifas" element={<ProtectedRoute><Layout><Tarifas /></Layout></ProtectedRoute>} />
+            <Route path="/incidencias" element={<ProtectedRoute><Layout><Incidencias /></Layout></ProtectedRoute>} />
+            <Route path="/seguimiento" element={<Layout><Seguimiento /></Layout>} />
+            <Route path="/admin" element={<ProtectedRoute requireAdmin><Layout><Admin /></Layout></ProtectedRoute>} />
+            <Route path="/admin/agencias" element={<ProtectedRoute requireAdmin><Layout><Agencias /></Layout></ProtectedRoute>} />
+            <Route path="/admin/usuarios" element={<ProtectedRoute requireSuperAdmin><Layout><AdminUsuarios /></Layout></ProtectedRoute>} />
+            <Route path="/admin/reportes" element={<ProtectedRoute requireAdmin><Layout><AdminReportes /></Layout></ProtectedRoute>} />
+            <Route path="/admin/tarifario" element={<ProtectedRoute requireAdmin><Layout><AdminTarifario /></Layout></ProtectedRoute>} />
+            <Route path="/admin/servicios-transportistas" element={<ProtectedRoute requireAdmin><Layout><ServiciosTransportistas /></Layout></ProtectedRoute>} />
+            <Route path="/admin/configuracion" element={<ProtectedRoute requireSuperAdmin><Layout><AdminConfiguracion /></Layout></ProtectedRoute>} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<Layout><NotFound /></Layout>} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
