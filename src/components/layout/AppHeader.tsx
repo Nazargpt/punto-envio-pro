@@ -107,8 +107,7 @@ const AppHeader: React.FC = () => {
               <Button
                 onClick={signOut}
                 size="sm"
-                variant="outline"
-                className="h-7 px-2 text-xs border-gray-600 text-white hover:bg-gray-800"
+                className="bg-red-600 hover:bg-red-700 text-white h-7 px-2 text-xs"
               >
                 <LogOut className="mr-1 h-3 w-3" />
                 <span className="hidden md:inline">Salir</span>
