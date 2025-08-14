@@ -294,13 +294,19 @@ const Cotizador = () => {
     const formData = form.getValues();
     
     // Navegar a crear orden con los datos del cotizador
-    const queryParams = new URLSearchParams({
-      ...formData,
-      cotaPeso: formData.cotaPeso,
-      valorDeclarado: formData.valorDeclarado.toString(),
-      termosellado: formData.termosellado.toString(),
-      cotizacionTotal: cotizacion?.total.toString() || '0'
+    const queryParams = new URLSearchParams();
+    
+    // Añadir todos los datos del formulario
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value.toString());
+      }
     });
+    
+    // Añadir la cotización total
+    if (cotizacion) {
+      queryParams.append('cotizacionTotal', cotizacion.total.toString());
+    }
 
     navigate(`/crear-orden?${queryParams.toString()}`);
   };
