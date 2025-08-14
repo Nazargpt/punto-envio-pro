@@ -90,7 +90,7 @@ const AdminSecureOrderAccess: React.FC = () => {
 
       toast({
         title: "Búsqueda completada",
-        description: `Se encontraron ${data?.length || 0} órdenes`
+        description: `Se encontraron ${(data as SecureOrderView[])?.length || 0} órdenes`
       });
     } catch (error) {
       console.error('Error searching orders:', error);
