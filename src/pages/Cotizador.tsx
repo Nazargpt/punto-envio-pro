@@ -51,7 +51,7 @@ const cotizadorSchema = z.object({
 
   // Paquete
   cotaPeso: z.string().min(1, 'Cota de peso es requerida'),
-  valorDeclarado: z.string().min(1, 'Valor declarado es requerido').transform(val => parseFloat(val)),
+  valorDeclarado: z.string().min(1, 'Valor declarado es requerido').transform(val => parseFloat(val)).refine(val => val >= 50000, 'El valor declarado debe ser mínimo $50.000'),
   descripcionPaquete: z.string().min(1, 'Descripción es requerida'),
   
   // Servicios adicionales
