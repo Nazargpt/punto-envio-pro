@@ -184,6 +184,44 @@ export type Database = {
         }
         Relationships: []
       }
+      matriz_provincias_zonas: {
+        Row: {
+          activo: boolean
+          created_at: string
+          id: string
+          provincia_destino: string
+          provincia_origen: string
+          updated_at: string
+          zona_id: string | null
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          id?: string
+          provincia_destino: string
+          provincia_origen: string
+          updated_at?: string
+          zona_id?: string | null
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          id?: string
+          provincia_destino?: string
+          provincia_origen?: string
+          updated_at?: string
+          zona_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matriz_provincias_zonas_zona_id_fkey"
+            columns: ["zona_id"]
+            isOneToOne: false
+            referencedRelation: "zonas_tarifarias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ordenes_envio: {
         Row: {
           agencia_destino_id: string | null
@@ -977,6 +1015,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      zonas_tarifarias: {
+        Row: {
+          activo: boolean
+          created_at: string
+          descripcion: string | null
+          id: string
+          multiplicador: number
+          nombre: string
+          precio_base_0_5kg: number
+          precio_base_10_15kg: number
+          precio_base_15_20kg: number
+          precio_base_20_25kg: number
+          precio_base_5_10kg: number
+          updated_at: string
+        }
+        Insert: {
+          activo?: boolean
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          multiplicador?: number
+          nombre: string
+          precio_base_0_5kg?: number
+          precio_base_10_15kg?: number
+          precio_base_15_20kg?: number
+          precio_base_20_25kg?: number
+          precio_base_5_10kg?: number
+          updated_at?: string
+        }
+        Update: {
+          activo?: boolean
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          multiplicador?: number
+          nombre?: string
+          precio_base_0_5kg?: number
+          precio_base_10_15kg?: number
+          precio_base_15_20kg?: number
+          precio_base_20_25kg?: number
+          precio_base_5_10kg?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {
