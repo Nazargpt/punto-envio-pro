@@ -99,13 +99,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "hojas_ruta_transportista_id_fkey"
-            columns: ["transportista_id"]
-            isOneToOne: false
-            referencedRelation: "transportistas_public"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "hojas_ruta_vehiculo_id_fkey"
             columns: ["vehiculo_id"]
             isOneToOne: false
@@ -616,13 +609,6 @@ export type Database = {
             referencedRelation: "transportistas"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "seguimiento_detallado_transportista_id_fkey"
-            columns: ["transportista_id"]
-            isOneToOne: false
-            referencedRelation: "transportistas_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       servicios_transportistas: {
@@ -668,13 +654,6 @@ export type Database = {
             columns: ["transportista_id"]
             isOneToOne: false
             referencedRelation: "transportistas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "servicios_transportistas_transportista_id_fkey"
-            columns: ["transportista_id"]
-            isOneToOne: false
-            referencedRelation: "transportistas_public"
             referencedColumns: ["id"]
           },
         ]
@@ -826,13 +805,6 @@ export type Database = {
             referencedRelation: "transportistas"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "transportistas_rutas_transportista_id_fkey"
-            columns: ["transportista_id"]
-            isOneToOne: false
-            referencedRelation: "transportistas_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       transportistas_zonas_cobertura: {
@@ -869,13 +841,6 @@ export type Database = {
             columns: ["transportista_id"]
             isOneToOne: false
             referencedRelation: "transportistas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "transportistas_zonas_cobertura_transportista_id_fkey"
-            columns: ["transportista_id"]
-            isOneToOne: false
-            referencedRelation: "transportistas_public"
             referencedColumns: ["id"]
           },
         ]
@@ -963,47 +928,11 @@ export type Database = {
             referencedRelation: "transportistas"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "vehiculos_transportista_id_fkey"
-            columns: ["transportista_id"]
-            isOneToOne: false
-            referencedRelation: "transportistas_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
     }
     Views: {
-      transportistas_public: {
-        Row: {
-          activo: boolean | null
-          apellido: string | null
-          created_at: string | null
-          id: string | null
-          nombre: string | null
-          tipo_transportista: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          activo?: boolean | null
-          apellido?: string | null
-          created_at?: string | null
-          id?: string | null
-          nombre?: string | null
-          tipo_transportista?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          activo?: boolean | null
-          apellido?: string | null
-          created_at?: string | null
-          id?: string | null
-          nombre?: string | null
-          tipo_transportista?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       generate_orden_number: {
@@ -1029,6 +958,18 @@ export type Database = {
           estado: string
           descripcion: string
           ubicacion: string
+        }[]
+      }
+      get_transportistas_basic: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          nombre: string
+          apellido: string
+          tipo_transportista: string
+          activo: boolean
+          created_at: string
+          updated_at: string
         }[]
       }
       get_transportistas_for_services: {

@@ -91,18 +91,21 @@ const ServiciosTransportistas: React.FC = () => {
   const cargarDatos = async () => {
     setIsLoading(true);
     try {
-      // Cargar transportistas
+      // Cargar transportistas usando función segura
       const { data: transportistasData, error: transportistasError } = await supabase
-        .from('transportistas')
-        .select('id, nombre, apellido')
-        .eq('activo', true)
-        .order('nombre');
+        .rpc('get_transportistas_for_services');
 
       if (transportistasError) {
         console.error('Error cargando transportistas:', transportistasError);
         toast.error('Error al cargar transportistas');
       } else {
-        setTransportistas(transportistasData || []);
+        // Map the data to match the expected format
+        const mappedData = (transportistasData || []).map(t => ({
+          id: t.id,
+          nombre: t.nombre_completo.split(' ')[0],
+          apellido: t.nombre_completo.split(' ').slice(1).join(' ')
+        }));
+        setTransportistas(mappedData);
       }
 
       // Cargar servicios con información del transportista
