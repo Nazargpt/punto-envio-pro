@@ -203,7 +203,7 @@ const Cotizador = () => {
         .eq('provincia_origen', remitenteProvincia)
         .eq('provincia_destino', destinatarioProvincia)
         .eq('activo', true)
-        .single();
+        .maybeSingle();
 
       let flete = 0;
       
@@ -246,7 +246,7 @@ const Cotizador = () => {
           .gte('peso_maximo', pesoKg)
           .eq('activo', true)
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (servicioData && !servicioError) {
           serviciosTransportista += servicioData.precio_adicional * servicioData.multiplicador;
