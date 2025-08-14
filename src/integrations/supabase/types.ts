@@ -471,6 +471,56 @@ export type Database = {
         }
         Relationships: []
       }
+      rutas_paradas: {
+        Row: {
+          created_at: string | null
+          es_cabecera: boolean | null
+          id: string
+          localidad: string | null
+          observaciones: string | null
+          orden_parada: number
+          provincia: string
+          ruta_id: string
+          tiempo_estimado_minutos: number | null
+          tipo_parada: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          es_cabecera?: boolean | null
+          id?: string
+          localidad?: string | null
+          observaciones?: string | null
+          orden_parada: number
+          provincia: string
+          ruta_id: string
+          tiempo_estimado_minutos?: number | null
+          tipo_parada: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          es_cabecera?: boolean | null
+          id?: string
+          localidad?: string | null
+          observaciones?: string | null
+          orden_parada?: number
+          provincia?: string
+          ruta_id?: string
+          tiempo_estimado_minutos?: number | null
+          tipo_parada?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rutas_paradas_ruta_id_fkey"
+            columns: ["ruta_id"]
+            isOneToOne: false
+            referencedRelation: "transportistas_rutas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       seguimiento_detallado: {
         Row: {
           created_at: string | null

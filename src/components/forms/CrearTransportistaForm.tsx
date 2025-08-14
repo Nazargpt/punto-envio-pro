@@ -35,6 +35,15 @@ const transportistaSchema = z.object({
     localidad_destino: z.string().optional(),
     tiempo_estimado_horas: z.number().min(1).optional(),
     distancia_km: z.number().min(0).optional(),
+    paradas: z.array(z.object({
+      orden_parada: z.number(),
+      provincia: z.string().min(1, "Provincia es requerida"),
+      localidad: z.string().optional(),
+      tipo_parada: z.enum(["pasada", "trasbordo"]),
+      es_cabecera: z.boolean().optional(),
+      tiempo_estimado_minutos: z.number().optional(),
+      observaciones: z.string().optional(),
+    })).optional(),
   })).optional(),
 });
 
@@ -63,7 +72,8 @@ export function CrearTransportistaForm() {
         provincia_destino: "", 
         localidad_destino: "",
         tiempo_estimado_horas: 24,
-        distancia_km: 0
+        distancia_km: 0,
+        paradas: []
       }],
     },
   });
@@ -133,15 +143,41 @@ export function CrearTransportistaForm() {
             provincia_destino: ruta.provincia_destino,
             localidad_destino: ruta.localidad_destino || null,
             tiempo_estimado_horas: ruta.tiempo_estimado_horas || 24,
-            distancia_km: ruta.distancia_km || null,
+            distancia_km: ruta.distancia_km || 0
           }));
 
         if (rutasData.length > 0) {
-          const { error: rutasError } = await supabase
+          const { data: rutasInsertadas, error: rutasError } = await supabase
             .from("transportistas_rutas")
-            .insert(rutasData);
+            .insert(rutasData)
+            .select("id");
 
           if (rutasError) throw rutasError;
+
+          // Insertar paradas para cada ruta
+          for (let i = 0; i < rutasInsertadas.length; i++) {
+            const rutaId = rutasInsertadas[i].id;
+            const rutaOriginal = data.rutas[i];
+            
+            if (rutaOriginal.paradas && rutaOriginal.paradas.length > 0) {
+              const paradasData = rutaOriginal.paradas.map((parada, index) => ({
+                ruta_id: rutaId,
+                orden_parada: index + 1,
+                provincia: parada.provincia,
+                localidad: parada.localidad || null,
+                tipo_parada: parada.tipo_parada,
+                es_cabecera: parada.es_cabecera || false,
+                tiempo_estimado_minutos: parada.tiempo_estimado_minutos || 30,
+                observaciones: parada.observaciones || null
+              }));
+
+              const { error: paradasError } = await supabase
+                .from("rutas_paradas")
+                .insert(paradasData);
+
+              if (paradasError) throw paradasError;
+            }
+          }
         }
       }
 
@@ -405,10 +441,10 @@ export function CrearTransportistaForm() {
                         </div>
 
                         <div>
-                          <Label>Localidad Origen</Label>
+                          <Label>Localidad Cabecera Origen</Label>
                           <Input
                             {...form.register(`rutas.${index}.localidad_origen`)}
-                            placeholder="Localidad (opcional)"
+                            placeholder="Localidad cabecera del servicio"
                           />
                         </div>
 
@@ -432,10 +468,10 @@ export function CrearTransportistaForm() {
                         </div>
 
                         <div>
-                          <Label>Localidad Destino</Label>
+                          <Label>Localidad Cabecera Destino</Label>
                           <Input
                             {...form.register(`rutas.${index}.localidad_destino`)}
-                            placeholder="Localidad (opcional)"
+                            placeholder="Localidad cabecera del servicio"
                           />
                         </div>
 
@@ -458,6 +494,137 @@ export function CrearTransportistaForm() {
                           />
                         </div>
                       </div>
+
+                      {/* Paradas intermedias */}
+                      <div className="mt-6 border-t pt-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <Label className="text-base font-semibold">Paradas en la Ruta</Label>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const currentParadas = form.watch(`rutas.${index}.paradas`) || [];
+                              form.setValue(`rutas.${index}.paradas`, [
+                                ...currentParadas,
+                                {
+                                  orden_parada: currentParadas.length + 1,
+                                  provincia: "",
+                                  localidad: "",
+                                  tipo_parada: "pasada",
+                                  es_cabecera: false,
+                                  tiempo_estimado_minutos: 30,
+                                  observaciones: ""
+                                }
+                              ]);
+                            }}
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Agregar Parada
+                          </Button>
+                        </div>
+
+                        {(form.watch(`rutas.${index}.paradas`) || []).map((parada, paradaIndex) => (
+                          <div key={paradaIndex} className="border rounded-lg p-3 mb-3 bg-muted/50">
+                            <div className="flex items-center justify-between mb-3">
+                              <Badge variant="secondary">Parada {paradaIndex + 1}</Badge>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const currentParadas = form.watch(`rutas.${index}.paradas`) || [];
+                                  const newParadas = currentParadas.filter((_, i) => i !== paradaIndex);
+                                  form.setValue(`rutas.${index}.paradas`, newParadas);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                              <div>
+                                <Label className="text-sm">Provincia *</Label>
+                                <Select
+                                  value={form.watch(`rutas.${index}.paradas.${paradaIndex}.provincia`)}
+                                  onValueChange={(value) => form.setValue(`rutas.${index}.paradas.${paradaIndex}.provincia`, value)}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Provincia" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {provinciasArgentinas.map((provincia) => (
+                                      <SelectItem key={provincia} value={provincia}>
+                                        {provincia}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div>
+                                <Label className="text-sm">Localidad</Label>
+                                <Input
+                                  {...form.register(`rutas.${index}.paradas.${paradaIndex}.localidad`)}
+                                  placeholder="Localidad"
+                                  className="text-sm"
+                                />
+                              </div>
+
+                              <div>
+                                <Label className="text-sm">Tipo de Parada *</Label>
+                                <Select
+                                  value={form.watch(`rutas.${index}.paradas.${paradaIndex}.tipo_parada`)}
+                                  onValueChange={(value) => form.setValue(`rutas.${index}.paradas.${paradaIndex}.tipo_parada`, value as "pasada" | "trasbordo")}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Tipo" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="pasada">De Pasada</SelectItem>
+                                    <SelectItem value="trasbordo">Trasbordo de Encomiendas</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div>
+                                <Label className="text-sm">Tiempo (minutos)</Label>
+                                <Input
+                                  type="number"
+                                  {...form.register(`rutas.${index}.paradas.${paradaIndex}.tiempo_estimado_minutos`, { valueAsNumber: true })}
+                                  placeholder="30"
+                                  className="text-sm"
+                                />
+                              </div>
+
+                              <div className="md:col-span-2">
+                                <Label className="text-sm">Observaciones</Label>
+                                <Input
+                                  {...form.register(`rutas.${index}.paradas.${paradaIndex}.observaciones`)}
+                                  placeholder="Observaciones adicionales"
+                                  className="text-sm"
+                                />
+                              </div>
+
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  {...form.register(`rutas.${index}.paradas.${paradaIndex}.es_cabecera`)}
+                                  className="rounded"
+                                />
+                                <Label className="text-sm">Es cabecera</Label>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+
+                        {(!form.watch(`rutas.${index}.paradas`) || form.watch(`rutas.${index}.paradas`).length === 0) && (
+                          <div className="text-center py-6 text-muted-foreground">
+                            <p className="text-sm">No hay paradas agregadas</p>
+                            <p className="text-xs">Agrega paradas intermedias para definir el recorrido completo</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
 
@@ -471,7 +638,8 @@ export function CrearTransportistaForm() {
                       provincia_destino: "", 
                       localidad_destino: "",
                       tiempo_estimado_horas: 24,
-                      distancia_km: 0
+                      distancia_km: 0,
+                      paradas: []
                     })}
                     className="w-full"
                   >
