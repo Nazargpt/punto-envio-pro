@@ -53,8 +53,8 @@ export const useTransportistasSecure = () => {
     }
   };
 
-  // Function to get full transportista data (sensitive - admin only)
-  const getTransportistaFull = async (id: string): Promise<TransportistaFull | null> => {
+  // Function to get full transportista data (sensitive - admin only) with masking
+  const getTransportistaFull = async (id: string): Promise<any> => {
     if (!isAdmin() && !isSuperAdmin()) {
       toast({
         title: "Acceso denegado",
@@ -65,36 +65,22 @@ export const useTransportistasSecure = () => {
     }
 
     try {
-      // Log the access attempt
-      await supabase.rpc('log_transportista_access', {
-        p_transportista_id: id,
-        p_access_type: 'view_full_details',
-        p_accessed_fields: [
-          'documento', 
-          'email', 
-          'telefono', 
-          'licencia_conducir',
-          'fecha_vencimiento_licencia'
-        ]
+      // Use the secure masking function instead of direct table access
+      const { data, error } = await supabase.rpc('get_transportista_with_masking', {
+        transportista_id: id
       });
-
-      const { data, error } = await supabase
-        .from('transportistas')
-        .select('*')
-        .eq('id', id)
-        .single();
 
       if (error) throw error;
       
       toast({
-        title: "Acceso registrado",
-        description: "El acceso a datos sensibles fue registrado en auditoría",
+        title: "Datos cargados con seguridad",
+        description: `Datos mostrados con nivel: ${data[0]?.access_level}`,
         variant: "default"
       });
 
-      return data;
+      return data[0];
     } catch (error) {
-      console.error('Error fetching full transportista:', error);
+      console.error('Error fetching secure transportista:', error);
       toast({
         title: "Error",
         description: "Error al cargar datos del transportista",

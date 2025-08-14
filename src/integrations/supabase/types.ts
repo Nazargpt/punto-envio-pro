@@ -611,6 +611,54 @@ export type Database = {
           },
         ]
       }
+      sensitive_data_audit: {
+        Row: {
+          access_reason: string | null
+          access_type: string
+          approval_timestamp: string | null
+          approved_by_user_id: string | null
+          created_at: string | null
+          field_name: string
+          id: string
+          ip_address: unknown | null
+          record_id: string | null
+          session_duration_minutes: number | null
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_reason?: string | null
+          access_type: string
+          approval_timestamp?: string | null
+          approved_by_user_id?: string | null
+          created_at?: string | null
+          field_name: string
+          id?: string
+          ip_address?: unknown | null
+          record_id?: string | null
+          session_duration_minutes?: number | null
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_reason?: string | null
+          access_type?: string
+          approval_timestamp?: string | null
+          approved_by_user_id?: string | null
+          created_at?: string | null
+          field_name?: string
+          id?: string
+          ip_address?: unknown | null
+          record_id?: string | null
+          session_duration_minutes?: number | null
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       servicios_transportistas: {
         Row: {
           activo: boolean
@@ -939,6 +987,26 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_orden_with_masking: {
+        Args: { orden_id: string }
+        Returns: {
+          id: string
+          numero_orden: string
+          estado: string
+          remitente_nombre: string
+          remitente_documento_masked: string
+          remitente_domicilio_masked: string
+          remitente_localidad: string
+          remitente_provincia: string
+          destinatario_nombre: string
+          destinatario_documento_masked: string
+          destinatario_domicilio_masked: string
+          destinatario_localidad: string
+          destinatario_provincia: string
+          access_level: string
+          created_at: string
+        }[]
+      }
       get_order_public_info: {
         Args: { order_number: string }
         Returns: {
@@ -958,6 +1026,26 @@ export type Database = {
           estado: string
           descripcion: string
           ubicacion: string
+        }[]
+      }
+      get_transportista_with_masking: {
+        Args: { transportista_id: string }
+        Returns: {
+          id: string
+          nombre: string
+          apellido: string
+          documento_masked: string
+          email_masked: string
+          telefono_masked: string
+          licencia_conducir_masked: string
+          fecha_vencimiento_licencia: string
+          tipo_transportista: string
+          nombre_empresa: string
+          calificacion: number
+          activo: boolean
+          access_level: string
+          created_at: string
+          updated_at: string
         }[]
       }
       get_transportistas_basic: {
@@ -1008,6 +1096,31 @@ export type Database = {
           p_accessed_fields?: string[]
         }
         Returns: undefined
+      }
+      mask_documento: {
+        Args: { documento: string; requester_role?: string }
+        Returns: string
+      }
+      mask_domicilio: {
+        Args: { domicilio: string }
+        Returns: string
+      }
+      mask_email: {
+        Args: { email: string }
+        Returns: string
+      }
+      mask_telefono: {
+        Args: { telefono: string }
+        Returns: string
+      }
+      request_sensitive_data_access: {
+        Args: {
+          target_table: string
+          target_record_id: string
+          target_fields: string[]
+          business_reason: string
+        }
+        Returns: string
       }
       search_orders_limited: {
         Args: { search_term: string; search_type?: string }
