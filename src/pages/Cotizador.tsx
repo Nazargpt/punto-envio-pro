@@ -50,7 +50,7 @@ const cotizadorSchema = z.object({
   agenciaDestinoId: z.string().optional(),
 
   // Paquete
-  pesoKg: z.string().min(1, 'Peso es requerido').transform(val => parseFloat(val)),
+  cotaPeso: z.string().min(1, 'Cota de peso es requerida'),
   valorDeclarado: z.string().min(1, 'Valor declarado es requerido').transform(val => parseFloat(val)),
   descripcionPaquete: z.string().min(1, 'Descripción es requerida'),
   
@@ -101,7 +101,7 @@ const Cotizador = () => {
   const remitenteLocalidad = form.watch('remitenteLocalidad');
   const remitenteProvincia = form.watch('remitenteProvincia');
   const destinatarioProvincia = form.watch('destinatarioProvincia');
-  const pesoKg = form.watch('pesoKg');
+  const cotaPeso = form.watch('cotaPeso');
   const valorDeclarado = form.watch('valorDeclarado');
   const termosellado = form.watch('termosellado');
 
@@ -126,10 +126,10 @@ const Cotizador = () => {
 
   // Calcular cotización automáticamente
   useEffect(() => {
-    if (remitenteProvincia && destinatarioProvincia && pesoKg && valorDeclarado) {
+    if (remitenteProvincia && destinatarioProvincia && cotaPeso && valorDeclarado) {
       calcularCotizacion();
     }
-  }, [remitenteProvincia, destinatarioProvincia, pesoKg, valorDeclarado, termosellado]);
+  }, [remitenteProvincia, destinatarioProvincia, cotaPeso, valorDeclarado, termosellado]);
 
   const cargarAgenciasDestino = async (localidad: string) => {
     setCargandoAgencias(true);
@@ -177,17 +177,22 @@ const Cotizador = () => {
     }
   };
 
-  const obtenerCotaPeso = (peso: number): string => {
-    if (peso <= 5) return '0-5';
-    if (peso <= 10) return '5-10';
-    if (peso <= 15) return '10-15';
-    if (peso <= 20) return '15-20';
-    if (peso <= 25) return '20-25';
-    return '25+';
+  const obtenerPesoMaximo = (cota: string): number => {
+    switch (cota) {
+      case '0-5': return 5;
+      case '5-10': return 10;
+      case '10-15': return 15;
+      case '15-20': return 20;
+      case '20-25': return 25;
+      case '25+': return 30; // Asumimos 30kg como máximo para cálculos
+      default: return 5;
+    }
   };
 
   const calcularCotizacion = async () => {
-    if (!remitenteProvincia || !destinatarioProvincia || !pesoKg || !valorDeclarado) return;
+    if (!remitenteProvincia || !destinatarioProvincia || !cotaPeso || !valorDeclarado) return;
+    
+    const pesoKg = obtenerPesoMaximo(cotaPeso);
 
     setCalculandoCotizacion(true);
     try {
@@ -210,8 +215,7 @@ const Cotizador = () => {
         toast.info('Tarifa no encontrada, usando precio base');
       }
 
-      // Ajustes por peso (cada 5kg adicionales)
-      const cotaPeso = obtenerCotaPeso(pesoKg);
+      // Ajustes por peso según cota seleccionada
       const ajustePorPeso = pesoKg > 5 ? Math.ceil((pesoKg - 5) / 5) * 500 : 0;
       flete += ajustePorPeso;
 
@@ -292,7 +296,7 @@ const Cotizador = () => {
     // Navegar a crear orden con los datos del cotizador
     const queryParams = new URLSearchParams({
       ...formData,
-      pesoKg: formData.pesoKg.toString(),
+      cotaPeso: formData.cotaPeso,
       valorDeclarado: formData.valorDeclarado.toString(),
       termosellado: formData.termosellado.toString(),
       cotizacionTotal: cotizacion?.total.toString() || '0'
@@ -671,20 +675,25 @@ const Cotizador = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <FormField
                         control={form.control}
-                        name="pesoKg"
+                        name="cotaPeso"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Peso (kg)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                step="0.1" 
-                                min="0.1" 
-                                max="25" 
-                                {...field} 
-                                placeholder="Ej: 2.5"
-                              />
-                            </FormControl>
+                            <FormLabel>Cota de Peso</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccionar rango de peso" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="0-5">0 - 5 kg</SelectItem>
+                                <SelectItem value="5-10">5 - 10 kg</SelectItem>
+                                <SelectItem value="10-15">10 - 15 kg</SelectItem>
+                                <SelectItem value="15-20">15 - 20 kg</SelectItem>
+                                <SelectItem value="20-25">20 - 25 kg</SelectItem>
+                                <SelectItem value="25+">Más de 25 kg</SelectItem>
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
