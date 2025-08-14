@@ -155,13 +155,6 @@ export type Database = {
             referencedRelation: "ordenes_envio"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "incidencias_orden_envio_id_fkey"
-            columns: ["orden_envio_id"]
-            isOneToOne: false
-            referencedRelation: "ordenes_envio_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       localidades: {
@@ -349,13 +342,6 @@ export type Database = {
             referencedRelation: "ordenes_envio"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "ordenes_hoja_ruta_orden_envio_id_fkey"
-            columns: ["orden_envio_id"]
-            isOneToOne: false
-            referencedRelation: "ordenes_envio_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       order_access_logs: {
@@ -440,13 +426,6 @@ export type Database = {
             columns: ["orden_envio_id"]
             isOneToOne: false
             referencedRelation: "ordenes_envio"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "paquetes_orden_envio_id_fkey"
-            columns: ["orden_envio_id"]
-            isOneToOne: false
-            referencedRelation: "ordenes_envio_public"
             referencedColumns: ["id"]
           },
         ]
@@ -621,13 +600,6 @@ export type Database = {
             columns: ["orden_envio_id"]
             isOneToOne: false
             referencedRelation: "ordenes_envio"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "seguimiento_detallado_orden_envio_id_fkey"
-            columns: ["orden_envio_id"]
-            isOneToOne: false
-            referencedRelation: "ordenes_envio_public"
             referencedColumns: ["id"]
           },
           {
@@ -960,71 +932,24 @@ export type Database = {
       }
     }
     Views: {
-      ordenes_envio_public: {
-        Row: {
-          created_at: string | null
-          destinatario_localidad: string | null
-          destinatario_nombre_publico: string | null
-          destinatario_provincia: string | null
-          estado: string | null
-          fecha_entrega: string | null
-          fecha_recoleccion: string | null
-          hora_entrega: string | null
-          hora_recoleccion: string | null
-          id: string | null
-          numero_orden: string | null
-          remitente_localidad: string | null
-          remitente_nombre_publico: string | null
-          remitente_provincia: string | null
-          tipo_entrega: string | null
-          tipo_recoleccion: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          destinatario_localidad?: string | null
-          destinatario_nombre_publico?: never
-          destinatario_provincia?: string | null
-          estado?: string | null
-          fecha_entrega?: string | null
-          fecha_recoleccion?: string | null
-          hora_entrega?: string | null
-          hora_recoleccion?: string | null
-          id?: string | null
-          numero_orden?: string | null
-          remitente_localidad?: string | null
-          remitente_nombre_publico?: never
-          remitente_provincia?: string | null
-          tipo_entrega?: string | null
-          tipo_recoleccion?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          destinatario_localidad?: string | null
-          destinatario_nombre_publico?: never
-          destinatario_provincia?: string | null
-          estado?: string | null
-          fecha_entrega?: string | null
-          fecha_recoleccion?: string | null
-          hora_entrega?: string | null
-          hora_recoleccion?: string | null
-          id?: string | null
-          numero_orden?: string | null
-          remitente_localidad?: string | null
-          remitente_nombre_publico?: never
-          remitente_provincia?: string | null
-          tipo_entrega?: string | null
-          tipo_recoleccion?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       generate_orden_number: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_order_public_info: {
+        Args: { order_number: string }
+        Returns: {
+          numero_orden: string
+          estado: string
+          remitente_nombre_publico: string
+          destinatario_nombre_publico: string
+          remitente_localidad: string
+          destinatario_localidad: string
+          created_at: string
+        }[]
       }
       get_tracking_info: {
         Args: { order_number: string }
@@ -1054,6 +979,18 @@ export type Database = {
           p_accessed_fields?: string[]
         }
         Returns: undefined
+      }
+      search_orders_limited: {
+        Args: { search_term: string; search_type?: string }
+        Returns: {
+          numero_orden: string
+          estado: string
+          remitente_nombre_parcial: string
+          destinatario_nombre_parcial: string
+          remitente_localidad: string
+          destinatario_localidad: string
+          created_at: string
+        }[]
       }
     }
     Enums: {

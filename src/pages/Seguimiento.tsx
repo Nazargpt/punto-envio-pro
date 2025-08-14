@@ -78,34 +78,22 @@ const Seguimiento = () => {
     setOrden(null);
 
     try {
-      // Use the secure function for public tracking - no authentication required
-      const { data, error } = await supabase.rpc('get_tracking_info', {
+      // Use the secure function for public tracking with audit logging
+      const { data: trackingData, error: trackingError } = await supabase.rpc('get_tracking_info', {
         order_number: numeroOrden.trim()
       });
 
-      if (error) {
-        console.error('Error fetching tracking info:', error);
-        throw error;
+      if (trackingError) {
+        console.error('Error fetching tracking info:', trackingError);
+        throw trackingError;
       }
 
-      // If we have tracking data, also get basic order info
-      const { data: orderData, error: orderError } = await supabase
-        .from('ordenes_envio')
-        .select(`
-          numero_orden,
-          estado,
-          remitente_nombre,
-          remitente_localidad,
-          remitente_provincia,
-          destinatario_nombre,
-          destinatario_localidad,
-          destinatario_provincia,
-          created_at
-        `)
-        .eq('numero_orden', numeroOrden.trim())
-        .single();
+      // Get sanitized public order info
+      const { data: orderData, error: orderError } = await supabase.rpc('get_order_public_info', {
+        order_number: numeroOrden.trim()
+      });
 
-      if (orderError || !orderData) {
+      if (orderError || !orderData || orderData.length === 0) {
         setNoEncontrado(true);
         toast({
           title: "Error",
@@ -113,19 +101,27 @@ const Seguimiento = () => {
           variant: "destructive"
         });
       } else {
-        // Combine order data with tracking data
+        const orderInfo = orderData[0];
+        // Use sanitized data - only shows first names and basic info
         setOrden({
-          ...orderData,
+          ...orderInfo,
           id: '', // Not needed for public tracking
-          remitente_domicilio: '',
-          destinatario_domicilio: '',
+          remitente_nombre: orderInfo.remitente_nombre_publico,
+          destinatario_nombre: orderInfo.destinatario_nombre_publico,
+          remitente_domicilio: 'Información confidencial',
+          destinatario_domicilio: 'Información confidencial',
+          remitente_localidad: orderInfo.remitente_localidad,
+          remitente_provincia: '',
+          destinatario_localidad: orderInfo.destinatario_localidad,
+          destinatario_provincia: '',
           fecha_recoleccion: '',
           hora_recoleccion: '',
           fecha_entrega: '',
           hora_entrega: '',
-          tipo_recoleccion: '',
-          tipo_entrega: ''
+          tipo_recoleccion: 'Información confidencial',
+          tipo_entrega: 'Información confidencial'
         });
+        
         toast({
           title: "Orden encontrada",
           description: "Información de seguimiento cargada correctamente"

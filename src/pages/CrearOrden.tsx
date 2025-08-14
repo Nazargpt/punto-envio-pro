@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Calendar, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAuditLog } from '@/hooks/useAuditLog';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { generatePDF, printPDF, type OrdenData } from '@/utils/pdfGenerator';
@@ -70,6 +71,7 @@ const CrearOrden = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { logOrderAccess } = useAuditLog();
   
   // Get URL search params to pre-fill form from cotizador
   const urlParams = new URLSearchParams(window.location.search);
@@ -239,6 +241,14 @@ const CrearOrden = () => {
         });
         return;
       }
+
+      // Log the order creation with audit trail
+      await logOrderAccess(
+        nuevaOrden.id,
+        nuevaOrden.numero_orden,
+        'create',
+        ['remitente_nombre', 'remitente_documento', 'destinatario_nombre', 'destinatario_documento']
+      );
 
       toast({
         title: "¡Orden creada exitosamente!",
