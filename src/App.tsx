@@ -24,6 +24,7 @@ import AdminConfiguracion from "./pages/AdminConfiguracion";
 import AdminTarifario from "./pages/AdminTarifario";
 import ServiciosTransportistas from "./components/admin/ServiciosTransportistas";
 import Agencias from "./pages/Agencias";
+import ProjectExporter from "./pages/ProjectExporter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/admin/tarifario" element={<ProtectedRoute requireAdmin><Layout><AdminTarifario /></Layout></ProtectedRoute>} />
             <Route path="/admin/servicios-transportistas" element={<ProtectedRoute requireAdmin><Layout><ServiciosTransportistas /></Layout></ProtectedRoute>} />
             <Route path="/admin/configuracion" element={<ProtectedRoute requireSuperAdmin><Layout><AdminConfiguracion /></Layout></ProtectedRoute>} />
+            <Route path="/project-exporter" element={<ProtectedRoute requireSuperAdmin><Layout><ProjectExporter /></Layout></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<Layout><NotFound /></Layout>} />
           </Routes>
