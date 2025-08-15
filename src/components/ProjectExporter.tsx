@@ -35,22 +35,28 @@ const ProjectExporter: React.FC = () => {
   const [step, setStep] = useState<'ready' | 'exporting' | 'complete'>('ready');
 
   const handleExport = useCallback(async () => {
+    console.log('🔄 Iniciando exportación...');
     setIsExporting(true);
     setStep('exporting');
     setExportProgress(0);
 
     try {
+      console.log('📦 Llamando a generateProjectExport...');
       const data = await generateProjectExport((progress, message) => {
+        console.log(`📈 Progreso: ${progress}% - ${message}`);
         setExportProgress(progress);
         setExportMessage(message);
       });
 
+      console.log('✅ Datos de exportación generados:', data ? 'Sí' : 'No');
+      console.log('📊 Tamaño de archivos:', data?.files ? Object.keys(data.files).length : 0);
+      
       setExportData(data);
       setStep('complete');
       toast.success('Exportación completada exitosamente');
     } catch (error) {
-      console.error('Error durante la exportación:', error);
-      toast.error('Error durante la exportación');
+      console.error('❌ Error durante la exportación:', error);
+      toast.error(`Error durante la exportación: ${error.message}`);
       setStep('ready');
     } finally {
       setIsExporting(false);
@@ -58,22 +64,42 @@ const ProjectExporter: React.FC = () => {
   }, []);
 
   const handleDownload = useCallback(() => {
-    if (!exportData) return;
+    console.log('⬇️ Iniciando descarga...');
+    if (!exportData) {
+      console.error('❌ No hay datos de exportación para descargar');
+      toast.error('No hay datos para descargar');
+      return;
+    }
 
-    const dataStr = JSON.stringify(exportData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `puntoenvio-export-${new Date().toISOString().split('T')[0]}.json`;
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    URL.revokeObjectURL(url);
-    toast.success('Archivo descargado exitosamente');
+    try {
+      console.log('📄 Generando JSON...');
+      const dataStr = JSON.stringify(exportData, null, 2);
+      console.log('📏 Tamaño del JSON:', dataStr.length, 'caracteres');
+      
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      console.log('📦 Blob creado, tamaño:', dataBlob.size, 'bytes');
+      
+      const url = URL.createObjectURL(dataBlob);
+      const fileName = `puntoenvio-export-${new Date().toISOString().split('T')[0]}.json`;
+      console.log('🔗 URL creada:', url);
+      console.log('📁 Nombre del archivo:', fileName);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      
+      document.body.appendChild(link);
+      console.log('🖱️ Haciendo clic en el enlace...');
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(url);
+      console.log('✅ Descarga iniciada exitosamente');
+      toast.success('Archivo descargado exitosamente');
+    } catch (error) {
+      console.error('❌ Error en descarga:', error);
+      toast.error(`Error en descarga: ${error.message}`);
+    }
   }, [exportData]);
 
   const handleCopy = useCallback(() => {
