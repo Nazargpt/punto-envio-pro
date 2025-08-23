@@ -113,6 +113,34 @@ const ProjectExporter: React.FC = () => {
     });
   }, [exportData]);
 
+  const handleDownloadPrompt = useCallback(async () => {
+    try {
+      console.log('📥 Descargando prompt markdown...');
+      const response = await fetch('/PROMPT_COMPLETO_PUNTOENVIO.md');
+      if (!response.ok) {
+        throw new Error('No se pudo obtener el archivo');
+      }
+      
+      const content = await response.text();
+      const blob = new Blob([content], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'PROMPT_COMPLETO_PUNTOENVIO.md';
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      URL.revokeObjectURL(url);
+      toast.success('Prompt descargado exitosamente');
+    } catch (error) {
+      console.error('❌ Error descargando prompt:', error);
+      toast.error('Error descargando el prompt');
+    }
+  }, []);
+
   const resetExporter = () => {
     setExportData(null);
     setStep('ready');
@@ -190,16 +218,31 @@ const ProjectExporter: React.FC = () => {
 
               <Separator />
 
-              <div className="flex justify-center">
-                <Button 
-                  onClick={handleExport}
-                  disabled={isExporting}
-                  className="px-8 py-2"
-                  size="lg"
-                >
-                  <FileJson className="mr-2 h-4 w-4" />
-                  Generar Exportación
-                </Button>
+              <div className="flex flex-col gap-4 items-center">
+                <div className="flex gap-4">
+                  <Button 
+                    onClick={handleExport}
+                    disabled={isExporting}
+                    className="px-8 py-2"
+                    size="lg"
+                  >
+                    <FileJson className="mr-2 h-4 w-4" />
+                    Generar Exportación JSON
+                  </Button>
+                  <Button 
+                    onClick={handleDownloadPrompt}
+                    variant="outline"
+                    className="px-8 py-2"
+                    size="lg"
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Descargar Prompt MD
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground text-center">
+                  <strong>Prompt MD:</strong> Archivo markdown completo para recrear el proyecto en otro Lovable<br/>
+                  <strong>Exportación JSON:</strong> Archivo JSON estructurado con metadatos y análisis
+                </p>
               </div>
             </div>
           </CardContent>
