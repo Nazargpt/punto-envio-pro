@@ -24,6 +24,7 @@ import AdminConfiguracion from "./pages/AdminConfiguracion";
 import AdminTarifario from "./pages/AdminTarifario";
 import ServiciosTransportistas from "./components/admin/ServiciosTransportistas";
 import Agencias from "./pages/Agencias";
+import BuscarAgencias from "./pages/BuscarAgencias";
 import ProjectExporter from "./pages/ProjectExporter";
 import NotFound from "./pages/NotFound";
 
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/tarifas" element={<ProtectedRoute><Layout><Tarifas /></Layout></ProtectedRoute>} />
             <Route path="/incidencias" element={<ProtectedRoute><Layout><Incidencias /></Layout></ProtectedRoute>} />
             <Route path="/seguimiento" element={<Layout><Seguimiento /></Layout>} />
+            <Route path="/buscar-agencias" element={<Layout><BuscarAgencias /></Layout>} />
             <Route path="/admin" element={<ProtectedRoute requireAdmin><Layout><Admin /></Layout></ProtectedRoute>} />
             <Route path="/admin/agencias" element={<ProtectedRoute requireAdmin><Layout><Agencias /></Layout></ProtectedRoute>} />
             <Route path="/admin/usuarios" element={<ProtectedRoute requireSuperAdmin><Layout><AdminUsuarios /></Layout></ProtectedRoute>} />
