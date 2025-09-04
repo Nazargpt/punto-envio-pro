@@ -1,260 +1,213 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Plus, Search, Calendar, Truck, Route } from 'lucide-react';
+import { Search, MapPin, Calendar, Package, Truck, Route } from 'lucide-react';
+import { HojaRutaCard } from '@/components/hojas-ruta/HojaRutaCard';
+import { useHojasRuta } from '@/hooks/useHojasRuta';
+import { useAuth } from '@/contexts/AuthContext';
 
-const HojasRuta: React.FC = () => {
+const HojasRuta = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [transportistaId, setTransportistaId] = useState<string | null>(null);
+  const { hojasRuta, obtenerHojasRutaTransportista, loading } = useHojasRuta();
+  const { user } = useAuth();
 
-  const mockRoutes = [
-    {
-      id: 'HR-001',
-      tipo: 'LOCAL_ORIGEN',
-      fecha: '2024-01-15',
-      transportista: 'Juan Carlos Méndez',
-      agencia: 'Agencia Central CABA',
-      ordenes: 12,
-      estado: 'EN_CURSO',
-      zonas: ['Palermo', 'Belgrano', 'Núñez']
-    },
-    {
-      id: 'HR-002',
-      tipo: 'LARGA_DISTANCIA',
-      fecha: '2024-01-15',
-      transportista: 'Transportes del Norte S.A.',
-      ruta: 'CABA → Córdoba → Rosario',
-      ordenes: 45,
-      estado: 'ABIERTA',
-      estimado: '8 horas'
-    },
-    {
-      id: 'HR-003',
-      tipo: 'LOCAL_DESTINO',
-      fecha: '2024-01-14',
-      transportista: 'María Elena Vásquez',
-      agencia: 'Agencia Córdoba Norte',
-      ordenes: 8,
-      estado: 'CERRADA',
-      zonas: ['Nueva Córdoba', 'Centro', 'Alberdi']
+  // Get transporter ID for current user (simplified - would need proper implementation)
+  useEffect(() => {
+    if (user) {
+      // Mock transporter ID - in real implementation, get from user profile/roles
+      setTransportistaId('mock-transportista-id');
     }
-  ];
+  }, [user]);
 
-  const getEstadoBadge = (estado: string) => {
-    const variants: Record<string, { variant: any; label: string }> = {
-      'ABIERTA': { variant: 'secondary', label: 'Abierta' },
-      'EN_CURSO': { variant: 'default', label: 'En Curso' },
-      'CERRADA': { variant: 'outline', label: 'Cerrada' }
-    };
-    
-    const config = variants[estado] || variants['ABIERTA'];
-    return (
-      <Badge variant={config.variant}>
-        {config.label}
-      </Badge>
-    );
-  };
+  useEffect(() => {
+    if (transportistaId) {
+      obtenerHojasRutaTransportista(transportistaId);
+    }
+  }, [transportistaId, obtenerHojasRutaTransportista]);
 
-  const getTipoBadge = (tipo: string) => {
-    const variants: Record<string, { color: string; label: string }> = {
-      'LOCAL_ORIGEN': { color: 'bg-blue-100 text-blue-800', label: 'Local Origen' },
-      'LARGA_DISTANCIA': { color: 'bg-purple-100 text-purple-800', label: 'Larga Distancia' },
-      'LOCAL_DESTINO': { color: 'bg-green-100 text-green-800', label: 'Local Destino' }
-    };
-    
-    const config = variants[tipo] || variants['LOCAL_ORIGEN'];
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
-        {config.label}
-      </span>
-    );
-  };
-
-  const filteredRoutes = mockRoutes.filter(route =>
-    route.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    route.transportista.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter routes based on search term
+  const filteredRoutes = hojasRuta.filter(ruta =>
+    ruta.codigo_seguimiento.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ruta.observaciones?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Separate routes by type
+  const rutasLocalOrigen = filteredRoutes.filter(r => r.tipo_ruta === 'local_origen');
+  const rutasLargaDistancia = filteredRoutes.filter(r => r.tipo_ruta === 'larga_distancia');
+  const rutasLocalDestino = filteredRoutes.filter(r => r.tipo_ruta === 'local_destino');
+
+  const getEstadoStats = () => {
+    const stats = {
+      total: hojasRuta.length,
+      planificadas: hojasRuta.filter(r => r.estado === 'planificada').length,
+      enCurso: hojasRuta.filter(r => r.estado === 'en_curso').length,
+      completadas: hojasRuta.filter(r => r.estado === 'completada').length
+    };
+    
+    return stats;
+  };
+
+  const stats = getEstadoStats();
+
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Hojas de Ruta</h1>
-          <p className="text-muted-foreground">Gestiona las hojas de ruta locales y de larga distancia</p>
+          <h1 className="text-3xl font-bold tracking-tight">Mis Hojas de Ruta</h1>
+          <p className="text-muted-foreground">
+            Gestiona tus rutas asignadas y actualiza el estado de las entregas
+          </p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Nueva Hoja de Ruta
-        </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Activas Hoy</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Rutas</CardTitle>
             <Route className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">+2 vs ayer</p>
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">Rutas asignadas</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Planificadas</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.planificadas}</div>
+            <p className="text-xs text-muted-foreground">Por iniciar</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">En Curso</CardTitle>
-            <Truck className="h-4 w-4 text-orange-500" />
+            <Truck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">Locales y LD</p>
+            <div className="text-2xl font-bold">{stats.enCurso}</div>
+            <p className="text-xs text-muted-foreground">Activas ahora</p>
           </CardContent>
         </Card>
-
+        
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completadas</CardTitle>
-            <MapPin className="h-4 w-4 text-green-500" />
+            <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">25</div>
-            <p className="text-xs text-muted-foreground">Esta semana</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Órdenes Totales</CardTitle>
-            <Calendar className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">167</div>
-            <p className="text-xs text-muted-foreground">En hojas activas</p>
+            <div className="text-2xl font-bold">{stats.completadas}</div>
+            <p className="text-xs text-muted-foreground">Finalizadas</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Search and Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Búsqueda y Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <Label htmlFor="search">Buscar</Label>
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search"
-                  placeholder="Buscar por código o transportista..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
-              </div>
-            </div>
+      {/* Filters and Search */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar hojas de ruta..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Routes by Type */}
-      <Tabs defaultValue="todas" className="space-y-4">
+      {/* Routes Cards */}
+      <Tabs defaultValue="all" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="todas">Todas</TabsTrigger>
-          <TabsTrigger value="local">Locales</TabsTrigger>
-          <TabsTrigger value="larga">Larga Distancia</TabsTrigger>
+          <TabsTrigger value="all">Todas ({filteredRoutes.length})</TabsTrigger>
+          <TabsTrigger value="local-origen">Local Origen ({rutasLocalOrigen.length})</TabsTrigger>
+          <TabsTrigger value="larga-distancia">Larga Distancia ({rutasLargaDistancia.length})</TabsTrigger>
+          <TabsTrigger value="local-destino">Local Destino ({rutasLocalDestino.length})</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="todas" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Todas las Hojas de Ruta</CardTitle>
-              <CardDescription>
-                {filteredRoutes.length} hojas de ruta encontradas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {filteredRoutes.map((route) => (
-                  <div key={route.id} className="border rounded-lg p-4 hover:bg-muted/50">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-semibold">{route.id}</h3>
-                        {getTipoBadge(route.tipo)}
-                        {getEstadoBadge(route.estado)}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button variant="outline" size="sm">Ver Detalles</Button>
-                        <Button variant="outline" size="sm">Editar</Button>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Transportista</p>
-                        <p className="font-medium">{route.transportista}</p>
-                      </div>
-                      
-                      <div>
-                        <p className="text-muted-foreground">
-                          {route.tipo === 'LARGA_DISTANCIA' ? 'Ruta' : 'Agencia'}
-                        </p>
-                        <p className="font-medium">
-                          {route.tipo === 'LARGA_DISTANCIA' ? route.ruta : route.agencia}
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <p className="text-muted-foreground">Órdenes</p>
-                        <p className="font-medium">{route.ordenes} órdenes</p>
-                      </div>
-                    </div>
-
-                    {route.zonas && (
-                      <div className="mt-3">
-                        <p className="text-muted-foreground text-sm mb-1">Zonas de cobertura:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {route.zonas.map((zona, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {zona}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        
+        <TabsContent value="all" className="space-y-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-muted-foreground">Cargando hojas de ruta...</div>
+            </div>
+          ) : filteredRoutes.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <Route className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No hay hojas de ruta</h3>
+                <p className="text-muted-foreground text-center">
+                  {searchTerm ? 'No se encontraron hojas de ruta con el término de búsqueda.' : 'No tienes hojas de ruta asignadas en este momento.'}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6">
+              {filteredRoutes.map((hojaRuta) => (
+                <HojaRutaCard key={hojaRuta.id} hojaRuta={hojaRuta} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="local-origen" className="space-y-4">
+          <div className="grid gap-6">
+            {rutasLocalOrigen.map((hojaRuta) => (
+              <HojaRutaCard key={hojaRuta.id} hojaRuta={hojaRuta} />
+            ))}
+          </div>
+          {rutasLocalOrigen.length === 0 && (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <p className="text-muted-foreground">
+                  No hay rutas locales de origen asignadas.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="larga-distancia" className="space-y-4">
+          <div className="grid gap-6">
+            {rutasLargaDistancia.map((hojaRuta) => (
+              <HojaRutaCard key={hojaRuta.id} hojaRuta={hojaRuta} />
+            ))}
+          </div>
+          {rutasLargaDistancia.length === 0 && (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <p className="text-muted-foreground">
+                  No hay rutas de larga distancia asignadas.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
-        <TabsContent value="local">
-          <Card>
-            <CardHeader>
-              <CardTitle>Hojas de Ruta Locales</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Contenido específico para rutas locales...</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="larga">
-          <Card>
-            <CardHeader>
-              <CardTitle>Hojas de Ruta de Larga Distancia</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">Contenido específico para rutas de larga distancia...</p>
-            </CardContent>
-          </Card>
+        <TabsContent value="local-destino" className="space-y-4">
+          <div className="grid gap-6">
+            {rutasLocalDestino.map((hojaRuta) => (
+              <HojaRutaCard key={hojaRuta.id} hojaRuta={hojaRuta} />
+            ))}
+          </div>
+          {rutasLocalDestino.length === 0 && (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <p className="text-muted-foreground">
+                  No hay rutas locales de destino asignadas.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>

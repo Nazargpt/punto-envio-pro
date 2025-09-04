@@ -53,39 +53,102 @@ export type Database = {
         }
         Relationships: []
       }
+      hoja_ruta_fotos: {
+        Row: {
+          created_at: string
+          foto_url: string
+          hoja_ruta_id: string | null
+          id: string
+          observaciones: string | null
+          orden_envio_id: string | null
+          tipo_foto: string
+          tomada_por_user_id: string
+          ubicacion_gps: unknown | null
+        }
+        Insert: {
+          created_at?: string
+          foto_url: string
+          hoja_ruta_id?: string | null
+          id?: string
+          observaciones?: string | null
+          orden_envio_id?: string | null
+          tipo_foto: string
+          tomada_por_user_id: string
+          ubicacion_gps?: unknown | null
+        }
+        Update: {
+          created_at?: string
+          foto_url?: string
+          hoja_ruta_id?: string | null
+          id?: string
+          observaciones?: string | null
+          orden_envio_id?: string | null
+          tipo_foto?: string
+          tomada_por_user_id?: string
+          ubicacion_gps?: unknown | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hoja_ruta_fotos_hoja_ruta_id_fkey"
+            columns: ["hoja_ruta_id"]
+            isOneToOne: false
+            referencedRelation: "hojas_ruta"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hoja_ruta_fotos_orden_envio_id_fkey"
+            columns: ["orden_envio_id"]
+            isOneToOne: false
+            referencedRelation: "ordenes_envio"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hojas_ruta: {
         Row: {
+          codigo_seguimiento: string | null
           created_at: string | null
+          deposito_destino: string | null
+          deposito_origen: string | null
           estado: string | null
           fecha: string
           id: string
           km_final: number | null
           km_inicial: number | null
           observaciones: string | null
+          tipo_ruta: string
           transportista_id: string | null
           updated_at: string | null
           vehiculo_id: string | null
         }
         Insert: {
+          codigo_seguimiento?: string | null
           created_at?: string | null
+          deposito_destino?: string | null
+          deposito_origen?: string | null
           estado?: string | null
           fecha: string
           id?: string
           km_final?: number | null
           km_inicial?: number | null
           observaciones?: string | null
+          tipo_ruta?: string
           transportista_id?: string | null
           updated_at?: string | null
           vehiculo_id?: string | null
         }
         Update: {
+          codigo_seguimiento?: string | null
           created_at?: string | null
+          deposito_destino?: string | null
+          deposito_origen?: string | null
           estado?: string | null
           fecha?: string
           id?: string
           km_final?: number | null
           km_inicial?: number | null
           observaciones?: string | null
+          tipo_ruta?: string
           transportista_id?: string | null
           updated_at?: string | null
           vehiculo_id?: string | null
@@ -103,6 +166,64 @@ export type Database = {
             columns: ["vehiculo_id"]
             isOneToOne: false
             referencedRelation: "vehiculos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hojas_ruta_asociaciones: {
+        Row: {
+          created_at: string
+          estado_asociacion: string
+          fecha_entrega_deposito: string | null
+          fecha_recogida_deposito: string | null
+          hoja_ruta_larga_distancia_id: string | null
+          hoja_ruta_local_destino_id: string | null
+          hoja_ruta_local_origen_id: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          estado_asociacion?: string
+          fecha_entrega_deposito?: string | null
+          fecha_recogida_deposito?: string | null
+          hoja_ruta_larga_distancia_id?: string | null
+          hoja_ruta_local_destino_id?: string | null
+          hoja_ruta_local_origen_id?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          estado_asociacion?: string
+          fecha_entrega_deposito?: string | null
+          fecha_recogida_deposito?: string | null
+          hoja_ruta_larga_distancia_id?: string | null
+          hoja_ruta_local_destino_id?: string | null
+          hoja_ruta_local_origen_id?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hojas_ruta_asociaciones_hoja_ruta_larga_distancia_id_fkey"
+            columns: ["hoja_ruta_larga_distancia_id"]
+            isOneToOne: false
+            referencedRelation: "hojas_ruta"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hojas_ruta_asociaciones_hoja_ruta_local_destino_id_fkey"
+            columns: ["hoja_ruta_local_destino_id"]
+            isOneToOne: false
+            referencedRelation: "hojas_ruta"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hojas_ruta_asociaciones_hoja_ruta_local_origen_id_fkey"
+            columns: ["hoja_ruta_local_origen_id"]
+            isOneToOne: false
+            referencedRelation: "hojas_ruta"
             referencedColumns: ["id"]
           },
         ]
@@ -233,6 +354,7 @@ export type Database = {
           destinatario_nombre: string
           destinatario_provincia: string
           estado: string
+          estado_detallado: string | null
           fecha_entrega: string | null
           fecha_recoleccion: string | null
           hora_entrega: string | null
@@ -260,6 +382,7 @@ export type Database = {
           destinatario_nombre: string
           destinatario_provincia: string
           estado?: string
+          estado_detallado?: string | null
           fecha_entrega?: string | null
           fecha_recoleccion?: string | null
           hora_entrega?: string | null
@@ -287,6 +410,7 @@ export type Database = {
           destinatario_nombre?: string
           destinatario_provincia?: string
           estado?: string
+          estado_detallado?: string | null
           fecha_entrega?: string | null
           fecha_recoleccion?: string | null
           hora_entrega?: string | null
@@ -1066,6 +1190,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generar_hojas_ruta_agencia: {
+        Args: { p_agencia_id: string }
+        Returns: Json
+      }
+      generate_hoja_ruta_codigo: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_orden_number: {
         Args: Record<PropertyKey, never>
         Returns: string
