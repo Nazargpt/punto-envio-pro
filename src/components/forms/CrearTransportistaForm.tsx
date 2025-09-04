@@ -91,6 +91,8 @@ export function CrearTransportistaForm() {
   const tipoTransportista = form.watch("tipo_transportista");
 
   const onSubmit = async (data: TransportistaFormData) => {
+    console.log("Form submission started", data);
+    console.log("Form errors:", form.formState.errors);
     setIsSubmitting(true);
     try {
       // Crear el transportista
@@ -654,7 +656,15 @@ export function CrearTransportistaForm() {
               <Button type="button" variant="outline" onClick={() => form.reset()}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                onClick={() => {
+                  console.log("Submit button clicked");
+                  console.log("Form valid:", form.formState.isValid);
+                  console.log("Form errors:", form.formState.errors);
+                }}
+              >
                 {isSubmitting ? "Creando..." : "Crear Transportista"}
               </Button>
             </div>
