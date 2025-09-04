@@ -234,6 +234,64 @@ export const useHojasRuta = () => {
     }
   }, []);
 
+  const obtenerTransportistasDisponibles = useCallback(async (tipoTransportista: 'local' | 'larga_distancia') => {
+    try {
+      const { data, error } = await supabase
+        .from('transportistas')
+        .select('id, nombre, apellido, tipo_transportista, activo')
+        .eq('tipo_transportista', tipoTransportista)
+        .eq('activo', true)
+        .order('nombre', { ascending: true });
+
+      if (error) throw error;
+
+      return data || [];
+    } catch (error) {
+      console.error('Error obteniendo transportistas:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los transportistas disponibles",
+        variant: "destructive",
+      });
+      return [];
+    }
+  }, [toast]);
+
+  const actualizarTransportistaHojaRuta = useCallback(async (hojaRutaId: string, nuevoTransportistaId: string) => {
+    try {
+      const { error } = await supabase
+        .from('hojas_ruta')
+        .update({ 
+          transportista_id: nuevoTransportistaId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', hojaRutaId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Transportista actualizado",
+        description: "El transportista ha sido cambiado exitosamente",
+      });
+
+      // Refresh local data
+      setHojasRuta(prev => prev.map(hr => 
+        hr.id === hojaRutaId 
+          ? { ...hr, transportista_id: nuevoTransportistaId }
+          : hr
+      ));
+
+    } catch (error) {
+      console.error('Error actualizando transportista:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el transportista",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  }, [toast]);
+
   return {
     loading,
     hojasRuta,
@@ -241,6 +299,8 @@ export const useHojasRuta = () => {
     obtenerHojasRutaTransportista,
     actualizarEstadoHojaRuta,
     subirFotoHojaRuta,
-    obtenerFotosHojaRuta
+    obtenerFotosHojaRuta,
+    obtenerTransportistasDisponibles,
+    actualizarTransportistaHojaRuta
   };
 };

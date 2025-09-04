@@ -3,8 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, Package, MapPin, Camera, Clock, Truck, Building } from 'lucide-react';
+import { Calendar, Package, MapPin, Camera, Clock, Truck, Building, Edit } from 'lucide-react';
 import { CamaraCaptura } from './CamaraCaptura';
+import { EditarHojaRutaDialog } from './EditarHojaRutaDialog';
 import { useHojasRuta } from '@/hooks/useHojasRuta';
 
 interface Orden {
@@ -20,6 +21,7 @@ interface Orden {
 interface HojaRutaCardProps {
   hojaRuta: {
     id: string;
+    transportista_id: string;
     codigo_seguimiento: string;
     fecha: string;
     estado: string;
@@ -95,13 +97,19 @@ const getTipoFoto = (tipoRuta: string, estado: string): 'recogida_origen' | 'ent
 };
 
 export const HojaRutaCard: React.FC<HojaRutaCardProps> = ({ hojaRuta }) => {
-  const { actualizarEstadoHojaRuta } = useHojasRuta();
+  const { actualizarEstadoHojaRuta, obtenerHojasRutaTransportista } = useHojasRuta();
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const TipoIcon = tipoRutaIcons[hojaRuta.tipo_ruta];
   const actions = getEstadoActions(hojaRuta.tipo_ruta, hojaRuta.estado);
   const tipoFoto = getTipoFoto(hojaRuta.tipo_ruta, hojaRuta.estado);
 
   const handleEstadoChange = async (nuevoEstado: string) => {
     await actualizarEstadoHojaRuta(hojaRuta.id, nuevoEstado);
+  };
+
+  const handleEditSuccess = () => {
+    // Refresh data - this could trigger a parent refresh
+    window.location.reload();
   };
 
   return (
@@ -120,6 +128,16 @@ export const HojaRutaCard: React.FC<HojaRutaCardProps> = ({ hojaRuta }) => {
           </div>
           
           <div className="flex flex-col items-end gap-2">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditDialogOpen(true)}
+                className="h-8 w-8 p-0"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            </div>
             <Badge variant={estadoBadgeVariants[hojaRuta.estado as keyof typeof estadoBadgeVariants] || 'secondary'}>
               {hojaRuta.estado}
             </Badge>
@@ -224,6 +242,14 @@ export const HojaRutaCard: React.FC<HojaRutaCardProps> = ({ hojaRuta }) => {
           </>
         )}
       </CardContent>
+
+      {/* Dialog de edición */}
+      <EditarHojaRutaDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        hojaRuta={hojaRuta}
+        onSuccess={handleEditSuccess}
+      />
     </Card>
   );
 };
