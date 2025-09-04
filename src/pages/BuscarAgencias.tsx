@@ -159,12 +159,14 @@ const BuscarAgencias: React.FC = () => {
     return coordenadas[provincia] || coordenadas['Buenos Aires'];
   };
 
-  // Filtrar agencias por término de búsqueda
+  // Crear dos listas: A) filtradas por búsqueda, B) todas ordenadas por distancia
   const agenciasFiltradas = agencias.filter(agencia =>
     agencia.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
     agencia.localidad.toLowerCase().includes(searchTerm.toLowerCase()) ||
     agencia.provincia.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const todasLasAgencias = userLocation ? agencias : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -228,7 +230,7 @@ const BuscarAgencias: React.FC = () => {
         </Card>
 
         {/* Resultados */}
-        <div className="space-y-4">
+        <div className="space-y-8">
           {loading ? (
             <Card>
               <CardContent className="flex justify-center py-8">
@@ -237,102 +239,83 @@ const BuscarAgencias: React.FC = () => {
             </Card>
           ) : (
             <>
-              <div className="text-center">
-                <p className="text-muted-foreground">
-                  {agenciasFiltradas.length} agencia{agenciasFiltradas.length !== 1 ? 's' : ''} encontrada{agenciasFiltradas.length !== 1 ? 's' : ''}
-                  {userLocation && ' ordenadas por distancia'}
-                </p>
-              </div>
+              {/* SECCIÓN A: Agencias en la localidad detectada/buscada */}
+              {searchTerm && (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
+                      <Search className="h-6 w-6 text-primary" />
+                      Agencias en "{searchTerm}"
+                    </h2>
+                    <p className="text-muted-foreground">
+                      {agenciasFiltradas.length} agencia{agenciasFiltradas.length !== 1 ? 's' : ''} encontrada{agenciasFiltradas.length !== 1 ? 's' : ''}
+                      {userLocation && ' ordenadas por distancia'}
+                    </p>
+                  </div>
 
-              <div className="grid gap-4 max-w-4xl mx-auto">
-                {agenciasFiltradas.map((agencia) => (
-                  <Card key={agencia.id} className="hover:shadow-lg transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="space-y-1">
-                          <h3 className="text-xl font-semibold flex items-center gap-2">
-                            <Building2 className="h-5 w-5 text-primary" />
-                            {agencia.nombre}
-                          </h3>
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline">
-                              {agencia.tipo_parada ? 'Punto de Parada' : 'Agencia Principal'}
-                            </Badge>
-                            {agencia.distancia && (
-                              <Badge variant="secondary">
-                                <MapPin className="mr-1 h-3 w-3" />
-                                {agencia.distancia.toFixed(1)} km
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                  <div className="grid gap-4 max-w-4xl mx-auto">
+                    {agenciasFiltradas.map((agencia) => (
+                      <AgenciaCard key={`filtered-${agencia.id}`} agencia={agencia} />
+                    ))}
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">Dirección</p>
-                            <p className="flex items-start gap-2">
-                              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                              <span>
-                                {agencia.direccion}<br />
-                                {agencia.localidad}, {agencia.provincia}
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-3">
-                          <div>
-                            <p className="text-sm font-medium text-muted-foreground">Contacto</p>
-                            <div className="space-y-1">
-                              {agencia.contacto?.telefono && (
-                                <p className="flex items-center gap-2 text-sm">
-                                  <Phone className="h-3 w-3 text-muted-foreground" />
-                                  {agencia.contacto.telefono}
-                                </p>
-                              )}
-                              {agencia.contacto?.email && (
-                                <p className="flex items-center gap-2 text-sm">
-                                  <Mail className="h-3 w-3 text-muted-foreground" />
-                                  {agencia.contacto.email}
-                                </p>
-                              )}
-                              {(agencia.contacto?.horarios?.apertura && agencia.contacto?.horarios?.cierre) && (
-                                <p className="flex items-center gap-2 text-sm">
-                                  <Clock className="h-3 w-3 text-muted-foreground" />
-                                  {agencia.contacto.horarios.apertura} - {agencia.contacto.horarios.cierre}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {agencia.contacto?.nombre && (
-                        <div className="mt-4 pt-4 border-t">
-                          <p className="text-sm">
-                            <span className="font-medium">Responsable:</span> {agencia.contacto.nombre}
+                    {agenciasFiltradas.length === 0 && (
+                      <Card>
+                        <CardContent className="text-center py-8">
+                          <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="text-lg font-medium mb-2">No se encontraron agencias en "{searchTerm}"</h3>
+                          <p className="text-muted-foreground">
+                            No hay agencias que coincidan con esta búsqueda específica.
                           </p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                </div>
+              )}
 
-                {agenciasFiltradas.length === 0 && !loading && (
-                  <Card>
-                    <CardContent className="text-center py-8">
-                      <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">No se encontraron agencias</h3>
-                      <p className="text-muted-foreground">
-                        No hay agencias que coincidan con tu búsqueda. 
-                        Intenta con otra localidad o provincia.
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
+              {/* SECCIÓN B: Todas las agencias cercanas (solo si hay ubicación detectada) */}
+              {userLocation && todasLasAgencias.length > 0 && (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h2 className="text-2xl font-bold flex items-center justify-center gap-2">
+                      <Navigation className="h-6 w-6 text-primary" />
+                      Todas las agencias cercanas
+                    </h2>
+                    <p className="text-muted-foreground">
+                      {todasLasAgencias.length} agencias ordenadas por distancia desde tu ubicación
+                    </p>
+                  </div>
+
+                  <div className="grid gap-4 max-w-4xl mx-auto">
+                    {todasLasAgencias.map((agencia) => (
+                      <AgenciaCard key={`all-${agencia.id}`} agencia={agencia} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Estado vacío cuando no hay ubicación ni búsqueda */}
+              {!userLocation && !searchTerm && (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-xl font-medium mb-2">Encuentra agencias cercanas</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Detecta tu ubicación o busca por localidad para ver las agencias disponibles.
+                    </p>
+                    <Button onClick={detectarUbicacionPorIP} disabled={detectingLocation}>
+                      {detectingLocation ? (
+                        <>Detectando ubicación...</>
+                      ) : (
+                        <>
+                          <Navigation className="mr-2 h-4 w-4" />
+                          Detectar mi ubicación
+                        </>
+                      )}
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </>
           )}
         </div>
@@ -340,5 +323,81 @@ const BuscarAgencias: React.FC = () => {
     </div>
   );
 };
+
+// Componente para mostrar una agencia
+const AgenciaCard: React.FC<{ agencia: Agencia }> = ({ agencia }) => (
+  <Card className="hover:shadow-lg transition-shadow">
+    <CardContent className="p-6">
+      <div className="flex items-start justify-between mb-4">
+        <div className="space-y-1">
+          <h3 className="text-xl font-semibold flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-primary" />
+            {agencia.nombre}
+          </h3>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">
+              {agencia.tipo_parada ? 'Punto de Parada' : 'Agencia Principal'}
+            </Badge>
+            {agencia.distancia && (
+              <Badge variant="secondary">
+                <MapPin className="mr-1 h-3 w-3" />
+                {agencia.distancia.toFixed(1)} km
+              </Badge>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-3">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Dirección</p>
+            <p className="flex items-start gap-2">
+              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
+              <span>
+                {agencia.direccion}<br />
+                {agencia.localidad}, {agencia.provincia}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Contacto</p>
+            <div className="space-y-1">
+              {agencia.contacto?.telefono && (
+                <p className="flex items-center gap-2 text-sm">
+                  <Phone className="h-3 w-3 text-muted-foreground" />
+                  {agencia.contacto.telefono}
+                </p>
+              )}
+              {agencia.contacto?.email && (
+                <p className="flex items-center gap-2 text-sm">
+                  <Mail className="h-3 w-3 text-muted-foreground" />
+                  {agencia.contacto.email}
+                </p>
+              )}
+              {(agencia.contacto?.horarios?.apertura && agencia.contacto?.horarios?.cierre) && (
+                <p className="flex items-center gap-2 text-sm">
+                  <Clock className="h-3 w-3 text-muted-foreground" />
+                  {agencia.contacto.horarios.apertura} - {agencia.contacto.horarios.cierre}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {agencia.contacto?.nombre && (
+        <div className="mt-4 pt-4 border-t">
+          <p className="text-sm">
+            <span className="font-medium">Responsable:</span> {agencia.contacto.nombre}
+          </p>
+        </div>
+      )}
+    </CardContent>
+  </Card>
+);
 
 export default BuscarAgencias;
