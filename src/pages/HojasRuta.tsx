@@ -7,19 +7,59 @@ import { Search, MapPin, Calendar, Package, Truck, Route } from 'lucide-react';
 import { HojaRutaCard } from '@/components/hojas-ruta/HojaRutaCard';
 import { useHojasRuta } from '@/hooks/useHojasRuta';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const HojasRuta = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const { hojasRuta, obtenerHojasRutaTransportista, loading } = useHojasRuta();
+  const [hojasRuta, setHojasRuta] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  // Fetch all route sheets for admin view (not just for a specific transporter)
+  // Fetch all route sheets for admin view
   useEffect(() => {
     if (user) {
-      // For testing purposes, fetch hojas de ruta for the first transportista
-      obtenerHojasRutaTransportista('11111111-1111-4111-8111-111111111111');
+      obtenerTodasLasHojasRuta();
     }
-  }, [user, obtenerHojasRutaTransportista]);
+  }, [user]);
+
+  const obtenerTodasLasHojasRuta = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('hojas_ruta')
+        .select(`
+          *,
+          ordenes_hoja_ruta(
+            orden_envio_id,
+            tipo_visita,
+            completado,
+            ordenes_envio(
+              numero_orden,
+              estado,
+              estado_detallado,
+              remitente_nombre,
+              destinatario_nombre,
+              remitente_localidad,
+              destinatario_localidad
+            )
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const processedData = (data || []).map(item => ({
+        ...item,
+        tipo_ruta: item.tipo_ruta as 'local_origen' | 'larga_distancia' | 'local_destino',
+        ordenes_hoja_ruta: item.ordenes_hoja_ruta || []
+      }));
+      setHojasRuta(processedData);
+    } catch (error) {
+      console.error('Error obteniendo hojas de ruta:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter routes based on search term
   const filteredRoutes = hojasRuta.filter(ruta =>
@@ -50,9 +90,9 @@ const HojasRuta = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Mis Hojas de Ruta</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Gestión de Hojas de Ruta</h1>
           <p className="text-muted-foreground">
-            Gestiona tus rutas asignadas y actualiza el estado de las entregas
+            Panel administrativo para gestionar todas las hojas de ruta del sistema
           </p>
         </div>
       </div>
@@ -66,7 +106,7 @@ const HojasRuta = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">Rutas asignadas</p>
+            <p className="text-xs text-muted-foreground">Total en el sistema</p>
           </CardContent>
         </Card>
         
@@ -139,7 +179,7 @@ const HojasRuta = () => {
                 <Route className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No hay hojas de ruta</h3>
                 <p className="text-muted-foreground text-center">
-                  {searchTerm ? 'No se encontraron hojas de ruta con el término de búsqueda.' : 'No tienes hojas de ruta asignadas en este momento.'}
+                  {searchTerm ? 'No se encontraron hojas de ruta con el término de búsqueda.' : 'No hay hojas de ruta en el sistema en este momento.'}
                 </p>
               </CardContent>
             </Card>
