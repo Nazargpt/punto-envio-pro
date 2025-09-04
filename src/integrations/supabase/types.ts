@@ -1244,6 +1244,18 @@ export type Database = {
           remitente_nombre_publico: string
         }[]
       }
+      get_route_stops_for_agency: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          localidad: string
+          nombre_ruta: string
+          provincia: string
+          ruta_id: string
+          tipo_parada: string
+          transportista_empresa: string
+        }[]
+      }
       get_tracking_info: {
         Args: { order_number: string }
         Returns: {
