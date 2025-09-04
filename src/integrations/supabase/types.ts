@@ -24,6 +24,7 @@ export type Database = {
           localidad: string | null
           nombre: string
           provincia: string | null
+          ruta_parada_id: string | null
           tipo_parada: boolean | null
           updated_at: string | null
         }
@@ -36,6 +37,7 @@ export type Database = {
           localidad?: string | null
           nombre: string
           provincia?: string | null
+          ruta_parada_id?: string | null
           tipo_parada?: boolean | null
           updated_at?: string | null
         }
@@ -48,10 +50,19 @@ export type Database = {
           localidad?: string | null
           nombre?: string
           provincia?: string | null
+          ruta_parada_id?: string | null
           tipo_parada?: boolean | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "agencias_ruta_parada_id_fkey"
+            columns: ["ruta_parada_id"]
+            isOneToOne: false
+            referencedRelation: "rutas_paradas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hoja_ruta_fotos: {
         Row: {

@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Building2, MapPin, Phone, Mail, User, Plus } from 'lucide-react';
+import { Building2, MapPin, Phone, Mail, User, Plus, Truck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -29,6 +29,7 @@ const formSchema = z.object({
   horario_apertura: z.string().min(1, 'El horario de apertura es requerido'),
   horario_cierre: z.string().min(1, 'El horario de cierre es requerido'),
   tipo_parada: z.boolean().default(false),
+  ruta_parada_id: z.string().optional(),
   activo: z.boolean().default(true),
 }).refine((data) => data.localidad_id || data.nueva_localidad, {
   message: "Debe seleccionar una localidad existente o crear una nueva",
@@ -54,11 +55,21 @@ interface Localidad {
   codigo_postal?: string;
 }
 
+interface RutaParada {
+  id: string;
+  provincia: string;
+  localidad?: string;
+  tipo_parada: string;
+  nombre_ruta: string;
+  transportista_empresa?: string;
+}
+
 const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [provincias, setProvincias] = React.useState<Provincia[]>([]);
   const [localidades, setLocalidades] = React.useState<Localidad[]>([]);
+  const [rutasParadas, setRutasParadas] = React.useState<RutaParada[]>([]);
   const [mostrarNuevaLocalidad, setMostrarNuevaLocalidad] = React.useState(false);
   const [provinciaSeleccionada, setProvinciaSeleccionada] = React.useState<string>('');
 
@@ -95,8 +106,24 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
       setProvincias(data || []);
     };
 
+    const cargarRutasParadas = async () => {
+      try {
+        const { data, error } = await supabase.rpc('get_route_stops_for_agency');
+        if (error) throw error;
+        setRutasParadas(data || []);
+      } catch (error) {
+        console.error('Error al cargar rutas paradas:', error);
+        toast({
+          title: "Error",
+          description: "Error al cargar las rutas de parada",
+          variant: "destructive"
+        });
+      }
+    };
+
     cargarProvincias();
-  }, []);
+    cargarRutasParadas();
+  }, [toast]);
 
   // Cargar localidades cuando se selecciona una provincia
   React.useEffect(() => {
@@ -218,7 +245,7 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
         }
       };
 
-      const { data: result, error } = await supabase
+       const { data: result, error } = await supabase
         .from('agencias')
         .insert({
           nombre: data.nombre,
@@ -227,6 +254,7 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
           provincia: provinciaData?.nombre || '',
           contacto: contactoData,
           tipo_parada: data.tipo_parada,
+          ruta_parada_id: data.ruta_parada_id || null,
           activo: data.activo
         })
         .select()
@@ -545,6 +573,41 @@ const CrearAgenciaForm: React.FC<CrearAgenciaFormProps> = ({ onSuccess }) => {
                 onCheckedChange={(checked) => setValue('tipo_parada', checked)}
               />
             </div>
+
+            {/* Selector de Ruta Parada - aparece cuando tipo_parada está activado */}
+            {watchedValues.tipo_parada && (
+              <div className="space-y-2">
+                <Label htmlFor="ruta_parada">Asignar a Ruta de Transporte</Label>
+                <div className="relative">
+                  <Truck className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Select
+                    value={watchedValues.ruta_parada_id || ''}
+                    onValueChange={(value) => setValue('ruta_parada_id', value)}
+                  >
+                    <SelectTrigger className="pl-8">
+                      <SelectValue placeholder="Seleccionar parada en ruta..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rutasParadas.map((parada) => (
+                        <SelectItem key={parada.id} value={parada.id}>
+                          <div className="flex flex-col">
+                            <div className="font-medium">
+                              {parada.provincia}{parada.localidad ? ` - ${parada.localidad}` : ''}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {parada.tipo_parada} • {parada.nombre_ruta} • {parada.transportista_empresa || 'Sin empresa'}
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Seleccionar la parada específica en una ruta de larga distancia donde esta agencia funcionará
+                </p>
+              </div>
+            )}
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
