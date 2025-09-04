@@ -24,20 +24,20 @@ const transportistaSchema = z.object({
   licencia_conducir: z.string().optional(),
   fecha_vencimiento_licencia: z.string().optional(),
   zonas_cobertura: z.array(z.object({
-    provincia: z.string().min(1, "Provincia es requerida"),
+    provincia: z.string().optional(),
     localidad: z.string().optional(),
   })).optional(),
   rutas: z.array(z.object({
-    nombre_ruta: z.string().min(1, "Nombre de ruta es requerido"),
-    provincia_origen: z.string().min(1, "Provincia origen es requerida"),
+    nombre_ruta: z.string().optional(),
+    provincia_origen: z.string().optional(),
     localidad_origen: z.string().optional(),
-    provincia_destino: z.string().min(1, "Provincia destino es requerida"),
+    provincia_destino: z.string().optional(),
     localidad_destino: z.string().optional(),
     tiempo_estimado_horas: z.number().min(1).optional(),
     distancia_km: z.number().min(0).optional(),
     paradas: z.array(z.object({
       orden_parada: z.number(),
-      provincia: z.string().min(1, "Provincia es requerida"),
+      provincia: z.string().optional(),
       localidad: z.string().optional(),
       tipo_parada: z.enum(["pasada", "trasbordo"]),
       es_cabecera: z.boolean().optional(),
@@ -45,6 +45,28 @@ const transportistaSchema = z.object({
       observaciones: z.string().optional(),
     })).optional(),
   })).optional(),
+}).refine((data) => {
+  // Validación condicional para transportistas locales
+  if (data.tipo_transportista === "local") {
+    if (!data.zonas_cobertura || data.zonas_cobertura.length === 0) {
+      return false;
+    }
+    return data.zonas_cobertura.every(zona => zona.provincia && zona.provincia.trim() !== "");
+  }
+  // Validación condicional para transportistas de larga distancia
+  if (data.tipo_transportista === "larga_distancia") {
+    if (!data.rutas || data.rutas.length === 0) {
+      return false;
+    }
+    return data.rutas.every(ruta => 
+      ruta.nombre_ruta && ruta.nombre_ruta.trim() !== "" &&
+      ruta.provincia_origen && ruta.provincia_origen.trim() !== "" &&
+      ruta.provincia_destino && ruta.provincia_destino.trim() !== ""
+    );
+  }
+  return true;
+}, {
+  message: "Complete los campos requeridos según el tipo de transportista",
 });
 
 type TransportistaFormData = z.infer<typeof transportistaSchema>;
