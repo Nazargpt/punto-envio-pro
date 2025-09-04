@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Truck, Users, Settings, BarChart3, Shield, Calculator, Download } from 'lucide-react';
+import { Building2, Truck, Users, Settings, BarChart3, Shield, Calculator, Download, Route } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Admin: React.FC = () => {
@@ -84,7 +84,7 @@ const Admin: React.FC = () => {
       </Card>
 
       {/* Main Management Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Agencias Management */}
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader>
@@ -114,6 +114,41 @@ const Admin: React.FC = () => {
                 <Button className="w-full">
                   <Building2 className="mr-2 h-4 w-4" />
                   Gestionar Agencias
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Hojas de Ruta Management */}
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Route className="h-6 w-6 text-green-600" />
+              <div>
+                <CardTitle>Gestión de Hojas de Ruta</CardTitle>
+                <CardDescription>
+                  Administra rutas, asignaciones y seguimiento de entregas
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Total Hojas</p>
+                <p className="text-2xl font-bold">127</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Activas hoy</p>
+                <p className="text-2xl font-bold text-green-600">18</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Link to="/hojas-ruta" className="flex-1">
+                <Button className="w-full">
+                  <Route className="mr-2 h-4 w-4" />
+                  Gestionar Hojas de Ruta
                 </Button>
               </Link>
             </div>
