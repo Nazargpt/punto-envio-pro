@@ -10,23 +10,16 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const HojasRuta = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [transportistaId, setTransportistaId] = useState<string | null>(null);
   const { hojasRuta, obtenerHojasRutaTransportista, loading } = useHojasRuta();
   const { user } = useAuth();
 
-  // Get transporter ID for current user (simplified - would need proper implementation)
+  // Fetch all route sheets for admin view (not just for a specific transporter)
   useEffect(() => {
     if (user) {
-      // Mock transporter ID - in real implementation, get from user profile/roles
-      setTransportistaId('mock-transportista-id');
+      // For testing purposes, fetch hojas de ruta for the first transportista
+      obtenerHojasRutaTransportista('11111111-1111-4111-8111-111111111111');
     }
-  }, [user]);
-
-  useEffect(() => {
-    if (transportistaId) {
-      obtenerHojasRutaTransportista(transportistaId);
-    }
-  }, [transportistaId, obtenerHojasRutaTransportista]);
+  }, [user, obtenerHojasRutaTransportista]);
 
   // Filter routes based on search term
   const filteredRoutes = hojasRuta.filter(ruta =>
