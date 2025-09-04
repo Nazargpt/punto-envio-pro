@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, Package, MapPin, Camera, Clock, Truck, Building, Edit } from 'lucide-react';
+import { Calendar, Package, MapPin, Camera, Clock, Truck, Building, Edit, Settings } from 'lucide-react';
 import { CamaraCaptura } from './CamaraCaptura';
 import { EditarHojaRutaDialog } from './EditarHojaRutaDialog';
+import { OrdenManagementDialog } from './OrdenManagementDialog';
 import { useHojasRuta } from '@/hooks/useHojasRuta';
 
 interface Orden {
+  id: string;
   numero_orden: string;
   estado: string;
   estado_detallado: string;
@@ -16,6 +18,14 @@ interface Orden {
   destinatario_nombre: string;
   remitente_localidad: string;
   destinatario_localidad: string;
+  remitente_provincia: string;
+  destinatario_provincia: string;
+  agencia_origen_id?: string;
+  agencia_destino_id?: string;
+  fecha_recoleccion?: string;
+  hora_recoleccion?: string;
+  fecha_entrega?: string;
+  hora_entrega?: string;
 }
 
 interface HojaRutaCardProps {
@@ -30,12 +40,15 @@ interface HojaRutaCardProps {
     deposito_destino?: string;
     observaciones?: string;
     ordenes_hoja_ruta: Array<{
+      id: string;
       orden_envio_id: string;
       tipo_visita: string;
-      completado: boolean;
+      orden_visita: number;
+      completado?: boolean;
       ordenes_envio: Orden;
     }>;
   };
+  onUpdate?: () => void;
 }
 
 const tipoRutaLabels = {
@@ -96,9 +109,10 @@ const getTipoFoto = (tipoRuta: string, estado: string): 'recogida_origen' | 'ent
   return null;
 };
 
-export const HojaRutaCard: React.FC<HojaRutaCardProps> = ({ hojaRuta }) => {
+export const HojaRutaCard: React.FC<HojaRutaCardProps> = ({ hojaRuta, onUpdate }) => {
   const { actualizarEstadoHojaRuta, obtenerHojasRutaTransportista } = useHojasRuta();
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+  const [ordenManagementOpen, setOrdenManagementOpen] = React.useState(false);
   const TipoIcon = tipoRutaIcons[hojaRuta.tipo_ruta];
   const actions = getEstadoActions(hojaRuta.tipo_ruta, hojaRuta.estado);
   const tipoFoto = getTipoFoto(hojaRuta.tipo_ruta, hojaRuta.estado);
@@ -108,8 +122,11 @@ export const HojaRutaCard: React.FC<HojaRutaCardProps> = ({ hojaRuta }) => {
   };
 
   const handleEditSuccess = () => {
-    // Refresh data - this could trigger a parent refresh
-    window.location.reload();
+    onUpdate?.();
+  };
+
+  const handleOrdenManagementSuccess = () => {
+    onUpdate?.();
   };
 
   return (
@@ -132,8 +149,18 @@ export const HojaRutaCard: React.FC<HojaRutaCardProps> = ({ hojaRuta }) => {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setOrdenManagementOpen(true)}
+                className="h-8 w-8 p-0"
+                title="Gestionar Órdenes"
+              >
+                <Settings className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setEditDialogOpen(true)}
                 className="h-8 w-8 p-0"
+                title="Editar Transportista"
               >
                 <Edit className="h-4 w-4" />
               </Button>
@@ -182,9 +209,12 @@ export const HojaRutaCard: React.FC<HojaRutaCardProps> = ({ hojaRuta }) => {
             {hojaRuta.ordenes_hoja_ruta.map((item, index) => (
               <div key={item.orden_envio_id} className="border rounded-lg p-3 bg-muted/30">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-sm">
-                    {item.ordenes_envio.numero_orden}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">#{item.orden_visita}</Badge>
+                    <span className="font-medium text-sm">
+                      {item.ordenes_envio.numero_orden}
+                    </span>
+                  </div>
                   <Badge variant={item.completado ? 'outline' : 'secondary'} className="text-xs">
                     {item.completado ? 'Completado' : 'Pendiente'}
                   </Badge>
@@ -243,12 +273,19 @@ export const HojaRutaCard: React.FC<HojaRutaCardProps> = ({ hojaRuta }) => {
         )}
       </CardContent>
 
-      {/* Dialog de edición */}
+      {/* Dialogs */}
       <EditarHojaRutaDialog
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         hojaRuta={hojaRuta}
         onSuccess={handleEditSuccess}
+      />
+      
+      <OrdenManagementDialog
+        open={ordenManagementOpen}
+        onOpenChange={setOrdenManagementOpen}
+        hojaRuta={hojaRuta}
+        onSuccess={handleOrdenManagementSuccess}
       />
     </Card>
   );

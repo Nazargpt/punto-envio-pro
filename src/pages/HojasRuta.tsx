@@ -30,17 +30,28 @@ const HojasRuta = () => {
         .select(`
           *,
           ordenes_hoja_ruta(
+            id,
             orden_envio_id,
+            orden_visita,
             tipo_visita,
             completado,
             ordenes_envio(
+              id,
               numero_orden,
               estado,
               estado_detallado,
               remitente_nombre,
               destinatario_nombre,
               remitente_localidad,
-              destinatario_localidad
+              destinatario_localidad,
+              remitente_provincia,
+              destinatario_provincia,
+              agencia_origen_id,
+              agencia_destino_id,
+              fecha_recoleccion,
+              hora_recoleccion,
+              fecha_entrega,
+              hora_entrega
             )
           )
         `)
@@ -186,7 +197,11 @@ const HojasRuta = () => {
           ) : (
             <div className="grid gap-6">
               {filteredRoutes.map((hojaRuta) => (
-                <HojaRutaCard key={hojaRuta.id} hojaRuta={hojaRuta} />
+                <HojaRutaCard 
+                  key={hojaRuta.id} 
+                  hojaRuta={hojaRuta} 
+                  onUpdate={obtenerTodasLasHojasRuta}
+                />
               ))}
             </div>
           )}
@@ -195,7 +210,11 @@ const HojasRuta = () => {
         <TabsContent value="local-origen" className="space-y-4">
           <div className="grid gap-6">
             {rutasLocalOrigen.map((hojaRuta) => (
-              <HojaRutaCard key={hojaRuta.id} hojaRuta={hojaRuta} />
+              <HojaRutaCard 
+                key={hojaRuta.id} 
+                hojaRuta={hojaRuta} 
+                onUpdate={obtenerTodasLasHojasRuta}
+              />
             ))}
           </div>
           {rutasLocalOrigen.length === 0 && (
@@ -212,7 +231,11 @@ const HojasRuta = () => {
         <TabsContent value="larga-distancia" className="space-y-4">
           <div className="grid gap-6">
             {rutasLargaDistancia.map((hojaRuta) => (
-              <HojaRutaCard key={hojaRuta.id} hojaRuta={hojaRuta} />
+              <HojaRutaCard 
+                key={hojaRuta.id} 
+                hojaRuta={hojaRuta} 
+                onUpdate={obtenerTodasLasHojasRuta}
+              />
             ))}
           </div>
           {rutasLargaDistancia.length === 0 && (
@@ -229,7 +252,11 @@ const HojasRuta = () => {
         <TabsContent value="local-destino" className="space-y-4">
           <div className="grid gap-6">
             {rutasLocalDestino.map((hojaRuta) => (
-              <HojaRutaCard key={hojaRuta.id} hojaRuta={hojaRuta} />
+              <HojaRutaCard 
+                key={hojaRuta.id} 
+                hojaRuta={hojaRuta} 
+                onUpdate={obtenerTodasLasHojasRuta}
+              />
             ))}
           </div>
           {rutasLocalDestino.length === 0 && (
