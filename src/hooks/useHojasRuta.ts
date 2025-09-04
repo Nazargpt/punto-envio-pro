@@ -18,7 +18,7 @@ interface HojaRuta {
   deposito_destino?: string;
   created_at: string;
   updated_at: string;
-  ordenes_hoja_ruta?: Array<{
+  ordenes_hoja_ruta: Array<{
     orden_envio_id: string;
     tipo_visita: string;
     completado: boolean;
@@ -111,7 +111,8 @@ export const useHojasRuta = () => {
 
       const processedData = (data || []).map(item => ({
         ...item,
-        tipo_ruta: item.tipo_ruta as 'local_origen' | 'larga_distancia' | 'local_destino'
+        tipo_ruta: item.tipo_ruta as 'local_origen' | 'larga_distancia' | 'local_destino',
+        ordenes_hoja_ruta: item.ordenes_hoja_ruta || []
       }));
       setHojasRuta(processedData);
       return processedData;
