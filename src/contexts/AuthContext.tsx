@@ -13,6 +13,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   isAdmin: () => boolean;
   isSuperAdmin: () => boolean;
+  isSupervisor: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -147,11 +148,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const isAdmin = () => {
-    return userRole === 'ADMIN_AGENCIA' || userRole === 'SUPERADMIN';
+    return userRole === 'ADMIN_AGENCIA' || userRole === 'SUPERADMIN' || userRole === 'SUPERVISOR';
   };
 
   const isSuperAdmin = () => {
     return userRole === 'SUPERADMIN';
+  };
+
+  const isSupervisor = () => {
+    return userRole === 'SUPERVISOR';
   };
 
   const value: AuthContextType = {
@@ -164,6 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
     isAdmin,
     isSuperAdmin,
+    isSupervisor,
   };
 
   return (
