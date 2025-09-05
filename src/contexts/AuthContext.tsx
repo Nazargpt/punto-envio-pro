@@ -96,9 +96,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (error) {
+      let errorMessage = error.message;
+      
+      // Handle specific error cases with user-friendly messages
+      if (error.message.includes('Email not confirmed')) {
+        errorMessage = 'Debes confirmar tu email antes de iniciar sesión. Revisa tu bandeja de entrada y haz clic en el enlace de confirmación.';
+      } else if (error.message.includes('Invalid login credentials')) {
+        errorMessage = 'Email o contraseña incorrectos. Verifica tus credenciales.';
+      }
+      
       toast({
         title: "Error de inicio de sesión",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }
