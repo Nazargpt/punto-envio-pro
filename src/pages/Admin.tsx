@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Building2, Truck, Users, Settings, BarChart3, Shield, Calculator, Download, Route } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { MapaAgenciasDialog } from '@/components/admin/MapaAgenciasDialog';
 
 const Admin: React.FC = () => {
   return (
@@ -203,7 +204,7 @@ const Admin: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <Link to="/admin/usuarios" className="flex-1">
               <Button variant="outline" className="h-20 flex-col w-full">
                 <Users className="h-6 w-6 mb-2" />
@@ -234,6 +235,7 @@ const Admin: React.FC = () => {
                 <span>Exportar Proyecto</span>
               </Button>
             </Link>
+            <MapaAgenciasDialog />
           </div>
         </CardContent>
       </Card>
