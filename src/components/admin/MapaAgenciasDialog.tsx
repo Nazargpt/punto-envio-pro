@@ -76,11 +76,12 @@ export const MapaAgenciasDialog: React.FC = () => {
           </DialogTitle>
         </DialogHeader>
         
-        <div className="w-full h-full rounded-lg overflow-hidden">
+        <div className="w-full h-[500px] rounded-lg overflow-hidden border">
           <MapContainer
             center={[-34.6037, -58.3816]}
             zoom={8}
-            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={true}
+            style={{ height: '500px', width: '100%' }}
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
