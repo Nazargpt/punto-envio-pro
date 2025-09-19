@@ -108,6 +108,11 @@ const AdminUsuarios: React.FC = () => {
 
       setUsers(combinedData);
       setAuthError(null);
+      console.log('=== USUARIOS FINALES ===');
+      console.log(`Total usuarios encontrados: ${combinedData.length}`);
+      combinedData.forEach((user, index) => {
+        console.log(`${index + 1}. ${user.nombre} (${user.email}) - Rol: ${user.role} - Activo: ${user.activo}`);
+      });
       console.log('Users loaded successfully:', combinedData.length);
       
     } catch (error) {
@@ -176,6 +181,7 @@ const AdminUsuarios: React.FC = () => {
     ];
 
     console.log('=== INICIANDO CREACIÓN DE USUARIOS INICIALES ===');
+    console.log('Usuarios a crear:', initialUsers.map(u => ({ email: u.email, nombre: u.nombre })));
     setLoading(true);
     let successCount = 0;
     let errorCount = 0;
@@ -339,6 +345,14 @@ const AdminUsuarios: React.FC = () => {
           >
             <Users className="mr-2 h-4 w-4" />
             Crear Usuarios Iniciales
+          </Button>
+          <Button
+            variant="outline"
+            onClick={fetchUsers}
+            disabled={loading}
+          >
+            <Search className="mr-2 h-4 w-4" />
+            Recargar Lista
           </Button>
         </div>
       </div>
