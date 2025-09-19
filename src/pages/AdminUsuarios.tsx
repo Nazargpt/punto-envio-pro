@@ -87,7 +87,14 @@ const AdminUsuarios: React.FC = () => {
 
       // Combine data manually
       const combinedData = profiles?.map(profile => {
-        const roleData = userRoles?.find(r => r.user_id === profile.user_id);
+        // Get the most recent role for this user (in case of duplicates)
+        const userRolesList = userRoles?.filter(r => r.user_id === profile.user_id) || [];
+        const roleData = userRolesList.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )[0];
+        
+        console.log(`Usuario ${profile.nombre}: ${userRolesList.length} roles encontrados, usando rol: ${roleData?.role || 'USER'}`);
+        
         return {
           id: profile.user_id,
           email: profile.email || '',

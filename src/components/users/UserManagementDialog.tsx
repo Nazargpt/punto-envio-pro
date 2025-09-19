@@ -109,10 +109,24 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
 
         if (profileError) throw profileError;
 
-        // Update user role
+        // Update user role - first delete existing then insert new
+        console.log(`🔄 Actualizando rol de usuario ${user.id} a ${formData.role}`);
+        
+        // Delete existing roles for this user
+        const { error: deleteError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', user.id);
+
+        if (deleteError) {
+          console.error('Error deleting existing roles:', deleteError);
+          throw deleteError;
+        }
+
+        // Insert new role
         const { error: roleError } = await supabase
           .from('user_roles')
-          .upsert({
+          .insert({
             user_id: user.id,
             role: formData.role as any,
             agencia_id: formData.agencia_id === 'none' ? null : formData.agencia_id
