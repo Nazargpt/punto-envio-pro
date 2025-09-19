@@ -58,42 +58,51 @@ const AdminUsuarios: React.FC = () => {
     }
 
     try {
-      const { data: profiles, error } = await supabase
+      // First get all profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          user_id,
-          email,
-          nombre,
-          activo,
-          agencia_id,
-          created_at,
-          user_roles (
-            role
-          )
-        `);
+        .select('*')
+        .order('created_at', { ascending: false });
 
       console.log('Profiles data:', profiles);
-      console.log('Profiles error:', error);
+      console.log('Profiles error:', profilesError);
 
-      if (error) {
-        console.error('Supabase error:', error);
-        setAuthError(`Error de base de datos: ${error.message}`);
-        throw error;
+      if (profilesError) {
+        console.error('Profiles error:', profilesError);
+        setAuthError(`Error de base de datos: ${profilesError.message}`);
+        throw profilesError;
       }
-      
-      setUsers(profiles?.map(profile => ({
-        id: profile.user_id,
-        email: profile.email || '',
-        nombre: profile.nombre || '',
-        activo: profile.activo || false,
-        agencia_id: profile.agencia_id,
-        role: (profile.user_roles as any)?.[0]?.role || 'USER',
-        created_at: profile.created_at
-      })) || []);
-      
+
+      // Then get all user roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('*');
+
+      console.log('User roles data:', userRoles);
+      console.log('User roles error:', rolesError);
+
+      if (rolesError) {
+        console.error('Roles error:', rolesError);
+      }
+
+      // Combine data manually
+      const combinedData = profiles?.map(profile => {
+        const roleData = userRoles?.find(r => r.user_id === profile.user_id);
+        return {
+          id: profile.user_id,
+          email: profile.email || '',
+          nombre: profile.nombre || '',
+          activo: profile.activo || false,
+          agencia_id: profile.agencia_id,
+          role: roleData?.role || 'USER',
+          created_at: profile.created_at
+        };
+      }) || [];
+
+      setUsers(combinedData);
       setAuthError(null);
-      console.log('Users loaded successfully:', profiles?.length || 0);
+      console.log('Users loaded successfully:', combinedData.length);
+      
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
