@@ -71,11 +71,24 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
   }, [open]);
 
   const fetchAgencies = async () => {
-    setAgencies([
-      { id: '1', nombre: 'Agencia Principal' },
-      { id: '2', nombre: 'Agencia Norte' },
-      { id: '3', nombre: 'Agencia Sur' }
-    ]);
+    // Fetch real agencies from database or use proper UUIDs
+    try {
+      const { data: agenciasData, error } = await supabase
+        .from('agencias')
+        .select('id, nombre')
+        .eq('activo', true);
+      
+      if (error) {
+        console.error('Error fetching agencies:', error);
+        // Fallback to empty array if error
+        setAgencies([]);
+      } else {
+        setAgencies(agenciasData || []);
+      }
+    } catch (error) {
+      console.error('Error fetching agencies:', error);
+      setAgencies([]);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
