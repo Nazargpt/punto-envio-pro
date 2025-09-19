@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, UserPlus, Search, Edit, Trash2, Shield, Eye, Settings } from 'lucide-react';
+import { Users, UserPlus, Search, Edit, Trash2, Shield, Eye, Settings, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import UserManagementDialog from '@/components/users/UserManagementDialog';
 
 interface User {
@@ -28,7 +29,9 @@ const AdminUsuarios: React.FC = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user, userRole } = useAuth();
 
   useEffect(() => {
     fetchUsers();
@@ -44,6 +47,16 @@ const AdminUsuarios: React.FC = () => {
 
   const fetchUsers = async () => {
     console.log('Fetching users...');
+    console.log('Current user:', user);
+    console.log('User role:', userRole);
+    
+    if (!user) {
+      console.log('No user authenticated');
+      setAuthError('Debes estar autenticado para ver los usuarios');
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data: profiles, error } = await supabase
         .from('profiles')
@@ -63,7 +76,11 @@ const AdminUsuarios: React.FC = () => {
       console.log('Profiles data:', profiles);
       console.log('Profiles error:', error);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        setAuthError(`Error de base de datos: ${error.message}`);
+        throw error;
+      }
       
       setUsers(profiles?.map(profile => ({
         id: profile.user_id,
@@ -74,6 +91,9 @@ const AdminUsuarios: React.FC = () => {
         role: (profile.user_roles as any)?.[0]?.role || 'USER',
         created_at: profile.created_at
       })) || []);
+      
+      setAuthError(null);
+      console.log('Users loaded successfully:', profiles?.length || 0);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
@@ -236,6 +256,21 @@ const AdminUsuarios: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Authentication Error Alert */}
+      {authError && (
+        <Card className="border-destructive">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              <p className="font-medium">{authError}</p>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              Necesitas iniciar sesión con una cuenta de administrador para gestionar usuarios.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -243,6 +278,11 @@ const AdminUsuarios: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
             <p className="text-muted-foreground">Administra usuarios del sistema y sus permisos</p>
+            {user && (
+              <p className="text-xs text-muted-foreground">
+                Autenticado como: {user.email} - Rol: {userRole}
+              </p>
+            )}
           </div>
         </div>
         <div className="flex gap-2">
