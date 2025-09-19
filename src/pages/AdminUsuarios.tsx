@@ -142,9 +142,24 @@ const AdminUsuarios: React.FC = () => {
     setLoading(true);
     let successCount = 0;
     let errorCount = 0;
+    let errorMessages = [];
 
     for (const userData of initialUsers) {
       try {
+        console.log(`Creating user: ${userData.email}`);
+        
+        // Check if user already exists
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('email', userData.email)
+          .single();
+
+        if (existingProfile) {
+          console.log(`User ${userData.email} already exists, skipping...`);
+          continue;
+        }
+
         // Create new user
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: userData.email,
@@ -157,9 +172,14 @@ const AdminUsuarios: React.FC = () => {
           }
         });
 
-        if (authError) throw authError;
+        if (authError) {
+          console.error(`Auth error for ${userData.email}:`, authError);
+          throw authError;
+        }
 
         if (authData.user) {
+          console.log(`User created in auth: ${userData.email}`);
+          
           // Create profile
           const { error: profileError } = await supabase
             .from('profiles')
@@ -171,7 +191,10 @@ const AdminUsuarios: React.FC = () => {
               agencia_id: null
             });
 
-          if (profileError) throw profileError;
+          if (profileError) {
+            console.error(`Profile error for ${userData.email}:`, profileError);
+            throw profileError;
+          }
 
           // Create user role
           const { error: roleError } = await supabase
@@ -182,18 +205,27 @@ const AdminUsuarios: React.FC = () => {
               agencia_id: null
             });
 
-          if (roleError) throw roleError;
+          if (roleError) {
+            console.error(`Role error for ${userData.email}:`, roleError);
+            throw roleError;
+          }
 
+          console.log(`Successfully created user: ${userData.email} with role: ${userData.role}`);
           successCount++;
         }
       } catch (error: any) {
         console.error(`Error creating user ${userData.email}:`, error);
+        errorMessages.push(`${userData.email}: ${error.message}`);
         errorCount++;
       }
     }
 
     setLoading(false);
     await fetchUsers();
+
+    if (errorMessages.length > 0) {
+      console.log('Errors encountered:', errorMessages);
+    }
 
     toast({
       title: successCount > 0 ? "Usuarios creados" : "Error",
