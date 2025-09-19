@@ -34,7 +34,16 @@ const AdminUsuarios: React.FC = () => {
     fetchUsers();
   }, []);
 
+  // Force refresh when component mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchUsers();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   const fetchUsers = async () => {
+    console.log('Fetching users...');
     try {
       const { data: profiles, error } = await supabase
         .from('profiles')
@@ -50,6 +59,9 @@ const AdminUsuarios: React.FC = () => {
             role
           )
         `);
+
+      console.log('Profiles data:', profiles);
+      console.log('Profiles error:', error);
 
       if (error) throw error;
       
