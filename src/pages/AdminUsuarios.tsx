@@ -105,6 +105,91 @@ const AdminUsuarios: React.FC = () => {
     }
   };
 
+  const createInitialUsers = async () => {
+    const initialUsers = [
+      {
+        email: 'nadiabenitez@puntoenvio.com',
+        nombre: 'Nadia Benitez',
+        role: 'SUPERVISOR',
+        password: 'Argentina2025@'
+      },
+      {
+        email: 'lucianaespindola@puntoenvio.com',
+        nombre: 'Luciana Espindola',
+        role: 'OPERADOR_AGENCIA',
+        password: 'Argentina2025@'
+      },
+      {
+        email: 'sofiadondi@puntoenvio.com',
+        nombre: 'Sofia Dondi',
+        role: 'OPERADOR_AGENCIA',
+        password: 'Argentina2025@'
+      }
+    ];
+
+    setLoading(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const userData of initialUsers) {
+      try {
+        // Create new user
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: userData.email,
+          password: userData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              nombre: userData.nombre
+            }
+          }
+        });
+
+        if (authError) throw authError;
+
+        if (authData.user) {
+          // Create profile
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              user_id: authData.user.id,
+              email: userData.email,
+              nombre: userData.nombre,
+              activo: true,
+              agencia_id: null
+            });
+
+          if (profileError) throw profileError;
+
+          // Create user role
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: authData.user.id,
+              role: userData.role as any,
+              agencia_id: null
+            });
+
+          if (roleError) throw roleError;
+
+          successCount++;
+        }
+      } catch (error: any) {
+        console.error(`Error creating user ${userData.email}:`, error);
+        errorCount++;
+      }
+    }
+
+    setLoading(false);
+    await fetchUsers();
+
+    toast({
+      title: successCount > 0 ? "Usuarios creados" : "Error",
+      description: `Se crearon ${successCount} usuarios correctamente${errorCount > 0 ? `, ${errorCount} fallaron` : ''}`,
+      variant: errorCount > 0 && successCount === 0 ? "destructive" : "default"
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -116,16 +201,26 @@ const AdminUsuarios: React.FC = () => {
             <p className="text-muted-foreground">Administra usuarios del sistema y sus permisos</p>
           </div>
         </div>
-        <Button
-          onClick={() => {
-            setSelectedUser(null);
-            setIsEditMode(false);
-            setDialogOpen(true);
-          }}
-        >
-          <UserPlus className="mr-2 h-4 w-4" />
-          Nuevo Usuario
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => {
+              setSelectedUser(null);
+              setIsEditMode(false);
+              setDialogOpen(true);
+            }}
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Nuevo Usuario
+          </Button>
+          <Button
+            variant="outline"
+            onClick={createInitialUsers}
+            disabled={loading}
+          >
+            <Users className="mr-2 h-4 w-4" />
+            Crear Usuarios Iniciales
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -159,7 +254,7 @@ const AdminUsuarios: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {users.filter(u => u.role && ['ADMIN_AGENCIA', 'SUPERADMIN'].includes(u.role)).length}
+              {users.filter(u => u.role && ['ADMIN_AGENCIA', 'SUPERADMIN', 'SUPERVISOR'].includes(u.role)).length}
             </div>
             <p className="text-xs text-muted-foreground">con permisos admin</p>
           </CardContent>
@@ -208,7 +303,9 @@ const AdminUsuarios: React.FC = () => {
               <SelectContent>
                 <SelectItem value="all">Todos los roles</SelectItem>
                 <SelectItem value="USER">Usuario</SelectItem>
+                <SelectItem value="OPERADOR_AGENCIA">Operador Agencia</SelectItem>
                 <SelectItem value="ADMIN_AGENCIA">Admin Agencia</SelectItem>
+                <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
                 <SelectItem value="SUPERADMIN">Super Admin</SelectItem>
               </SelectContent>
             </Select>
@@ -239,10 +336,13 @@ const AdminUsuarios: React.FC = () => {
                     <TableCell>
                       <Badge variant={
                         user.role === 'SUPERADMIN' ? 'destructive' :
-                        user.role === 'ADMIN_AGENCIA' ? 'default' : 'secondary'
+                        user.role === 'ADMIN_AGENCIA' ? 'default' :
+                        user.role === 'SUPERVISOR' ? 'default' : 'secondary'
                       }>
                         {user.role === 'SUPERADMIN' ? 'Super Admin' :
-                         user.role === 'ADMIN_AGENCIA' ? 'Admin Agencia' : 'Usuario'}
+                         user.role === 'ADMIN_AGENCIA' ? 'Admin Agencia' :
+                         user.role === 'SUPERVISOR' ? 'Supervisor' :
+                         user.role === 'OPERADOR_AGENCIA' ? 'Operador' : 'Usuario'}
                       </Badge>
                     </TableCell>
                     <TableCell>

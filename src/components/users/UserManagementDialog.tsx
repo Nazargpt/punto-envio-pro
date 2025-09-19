@@ -226,7 +226,9 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="USER">Usuario</SelectItem>
+                <SelectItem value="OPERADOR_AGENCIA">Operador de Agencia</SelectItem>
                 <SelectItem value="ADMIN_AGENCIA">Administrador de Agencia</SelectItem>
+                <SelectItem value="SUPERVISOR">Supervisor</SelectItem>
                 <SelectItem value="SUPERADMIN">Super Administrador</SelectItem>
               </SelectContent>
             </Select>
