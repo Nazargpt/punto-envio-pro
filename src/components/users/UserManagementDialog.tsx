@@ -36,7 +36,7 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
     password: '',
     role: 'USER',
     activo: true,
-    agencia_id: ''
+    agencia_id: 'none'
   });
   const [agencies, setAgencies] = useState<Array<{ id: string; nombre: string }>>([]);
   const [loading, setLoading] = useState(false);
@@ -50,18 +50,18 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
         password: '',
         role: user.role || 'USER',
         activo: user.activo,
-        agencia_id: user.agencia_id || ''
+        agencia_id: user.agencia_id || 'none'
       });
-    } else {
-      setFormData({
-        email: '',
-        nombre: '',
-        password: '',
-        role: 'USER',
-        activo: true,
-        agencia_id: ''
-      });
-    }
+      } else {
+        setFormData({
+          email: '',
+          nombre: '',
+          password: '',
+          role: 'USER',
+          activo: true,
+          agencia_id: 'none'
+        });
+      }
   }, [user, isEdit, open]);
 
   useEffect(() => {
@@ -90,7 +90,7 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
           .update({
             nombre: formData.nombre,
             activo: formData.activo,
-            agencia_id: formData.agencia_id || null
+            agencia_id: formData.agencia_id === 'none' ? null : formData.agencia_id
           })
           .eq('user_id', user.id);
 
@@ -102,7 +102,7 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
           .upsert({
             user_id: user.id,
             role: formData.role as any,
-            agencia_id: formData.agencia_id || null
+            agencia_id: formData.agencia_id === 'none' ? null : formData.agencia_id
           });
 
         if (roleError) throw roleError;
@@ -135,7 +135,7 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
               email: formData.email,
               nombre: formData.nombre,
               activo: formData.activo,
-              agencia_id: formData.agencia_id || null
+              agencia_id: formData.agencia_id === 'none' ? null : formData.agencia_id
             });
 
           if (profileError) throw profileError;
@@ -146,7 +146,7 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
             .insert({
               user_id: authData.user.id,
               role: formData.role as any,
-              agencia_id: formData.agencia_id || null
+              agencia_id: formData.agencia_id === 'none' ? null : formData.agencia_id
             });
 
           if (roleError) throw roleError;
@@ -241,7 +241,7 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
                 <SelectValue placeholder="Seleccionar agencia" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Sin agencia</SelectItem>
+                <SelectItem value="none">Sin agencia</SelectItem>
                 {agencies.map((agency) => (
                   <SelectItem key={agency.id} value={agency.id}>
                     {agency.nombre}
