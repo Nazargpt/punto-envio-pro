@@ -168,6 +168,7 @@ const AdminUsuarios: React.FC = () => {
       }
     ];
 
+    console.log('=== INICIANDO CREACIÓN DE USUARIOS INICIALES ===');
     setLoading(true);
     let successCount = 0;
     let errorCount = 0;
@@ -175,26 +176,28 @@ const AdminUsuarios: React.FC = () => {
 
     for (const userData of initialUsers) {
       try {
-        console.log(`Creating user: ${userData.email}`);
+        console.log(`\n🔄 Procesando usuario: ${userData.email}`);
         
-        // Check if user already exists
+        // Check if user already exists in profiles
         const { data: existingProfile } = await supabase
           .from('profiles')
-          .select('email')
+          .select('email, nombre')
           .eq('email', userData.email)
-          .single();
+          .maybeSingle();
 
         if (existingProfile) {
-          console.log(`User ${userData.email} already exists, skipping...`);
+          console.log(`⚠️ Usuario ${userData.email} ya existe en profiles, saltando...`);
           continue;
         }
 
-        // Create new user
+        console.log(`✅ Usuario ${userData.email} no existe, creando...`);
+
+        // Create new user in Supabase Auth
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: userData.email,
           password: userData.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}/auth`,
             data: {
               nombre: userData.nombre
             }
@@ -202,12 +205,15 @@ const AdminUsuarios: React.FC = () => {
         });
 
         if (authError) {
-          console.error(`Auth error for ${userData.email}:`, authError);
+          console.error(`❌ Error de autenticación para ${userData.email}:`, authError);
           throw authError;
         }
 
         if (authData.user) {
-          console.log(`User created in auth: ${userData.email}`);
+          console.log(`✅ Usuario creado en auth para ${userData.email}, ID: ${authData.user.id}`);
+          
+          // Wait a moment for auth to complete
+          await new Promise(resolve => setTimeout(resolve, 500));
           
           // Create profile
           const { error: profileError } = await supabase
@@ -221,9 +227,11 @@ const AdminUsuarios: React.FC = () => {
             });
 
           if (profileError) {
-            console.error(`Profile error for ${userData.email}:`, profileError);
+            console.error(`❌ Error creando perfil para ${userData.email}:`, profileError);
             throw profileError;
           }
+
+          console.log(`✅ Perfil creado para ${userData.email}`);
 
           // Create user role
           const { error: roleError } = await supabase
@@ -235,30 +243,42 @@ const AdminUsuarios: React.FC = () => {
             });
 
           if (roleError) {
-            console.error(`Role error for ${userData.email}:`, roleError);
+            console.error(`❌ Error creando rol para ${userData.email}:`, roleError);
             throw roleError;
           }
 
-          console.log(`Successfully created user: ${userData.email} with role: ${userData.role}`);
+          console.log(`✅ Rol ${userData.role} asignado a ${userData.email}`);
+          console.log(`🎉 Usuario ${userData.email} creado exitosamente`);
           successCount++;
+        } else {
+          console.error(`❌ No se recibió objeto user para ${userData.email}`);
+          throw new Error('No se pudo crear el usuario en el sistema de autenticación');
         }
+
       } catch (error: any) {
-        console.error(`Error creating user ${userData.email}:`, error);
-        errorMessages.push(`${userData.email}: ${error.message}`);
+        console.error(`💥 Error general creando usuario ${userData.email}:`, error);
+        errorMessages.push(`${userData.nombre}: ${error.message}`);
         errorCount++;
       }
     }
 
-    setLoading(false);
-    await fetchUsers();
-
+    console.log(`\n=== RESUMEN CREACIÓN DE USUARIOS ===`);
+    console.log(`✅ Exitosos: ${successCount}`);
+    console.log(`❌ Fallidos: ${errorCount}`);
     if (errorMessages.length > 0) {
-      console.log('Errors encountered:', errorMessages);
+      console.log(`📋 Errores:`, errorMessages);
     }
 
+    setLoading(false);
+    
+    // Refresh user list
+    await fetchUsers();
+
     toast({
-      title: successCount > 0 ? "Usuarios creados" : "Error",
-      description: `Se crearon ${successCount} usuarios correctamente${errorCount > 0 ? `, ${errorCount} fallaron` : ''}`,
+      title: successCount > 0 ? "¡Usuarios creados!" : "Error en creación",
+      description: successCount > 0 
+        ? `Se crearon ${successCount} usuarios exitosamente${errorCount > 0 ? `. ${errorCount} usuarios fallaron.` : '.'}`
+        : `No se pudo crear ningún usuario. Revisa los logs para más detalles.`,
       variant: errorCount > 0 && successCount === 0 ? "destructive" : "default"
     });
   };
