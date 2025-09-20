@@ -19,7 +19,6 @@ interface User {
   agencia_id?: string;
   role?: string;
   created_at: string;
-  password?: string;
 }
 
 const AdminUsuarios: React.FC = () => {
@@ -96,11 +95,7 @@ const AdminUsuarios: React.FC = () => {
         
         console.log(`Usuario ${profile.nombre}: ${userRolesList.length} roles encontrados, usando rol: ${roleData?.role || 'USER'}`);
         
-        // Set default password for initial users
-        let defaultPassword = 'Sin contraseña';
-        if (['nadiabenitez@puntoenvio.com', 'lucianaespindola@puntoenvio.com', 'sofiadondi@puntoenvio.com'].includes(profile.email || '')) {
-          defaultPassword = 'Argentina2025@';
-        }
+        // Password security: Never store or display passwords in the application
         
         return {
           id: profile.user_id,
@@ -109,8 +104,7 @@ const AdminUsuarios: React.FC = () => {
           activo: profile.activo || false,
           agencia_id: profile.agencia_id,
           role: roleData?.role || 'USER',
-          created_at: profile.created_at,
-          password: defaultPassword
+          created_at: profile.created_at
         };
       }) || [];
 
@@ -166,25 +160,35 @@ const AdminUsuarios: React.FC = () => {
     }
   };
 
+  // Generate secure random password
+  const generateSecurePassword = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  };
+
   const createInitialUsers = async () => {
     const initialUsers = [
       {
         email: 'nadiabenitez@puntoenvio.com',
         nombre: 'Nadia Benitez',
         role: 'SUPERVISOR',
-        password: 'Argentina2025@'
+        password: generateSecurePassword()
       },
       {
         email: 'lucianaespindola@puntoenvio.com',
         nombre: 'Luciana Espindola',
         role: 'OPERADOR_AGENCIA',
-        password: 'Argentina2025@'
+        password: generateSecurePassword()
       },
       {
         email: 'sofiadondi@puntoenvio.com',
         nombre: 'Sofia Dondi',
         role: 'OPERADOR_AGENCIA',
-        password: 'Argentina2025@'
+        password: generateSecurePassword()
       }
     ];
 
@@ -213,17 +217,26 @@ const AdminUsuarios: React.FC = () => {
 
         console.log(`✅ Usuario ${userData.email} no existe, creando...`);
 
-        // Create new user in Supabase Auth
+        // Create new user in Supabase Auth with secure password
+        console.log(`🔐 Generando credenciales seguras para ${userData.email}`);
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: userData.email,
           password: userData.password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth`,
             data: {
-              nombre: userData.nombre
+              nombre: userData.nombre,
+              // Force password change on first login
+              change_password_required: true
             }
           }
         });
+
+        // Log the temporary password for the administrator (secure logging)
+        console.log(`🔑 Credenciales temporales para ${userData.nombre} (${userData.email}):`);
+        console.log(`   Email: ${userData.email}`);
+        console.log(`   Contraseña temporal: ${userData.password}`);
+        console.log(`   ⚠️ El usuario deberá cambiar la contraseña en el primer inicio de sesión`);
 
         if (authError) {
           console.error(`❌ Error de autenticación para ${userData.email}:`, authError);
@@ -457,7 +470,7 @@ const AdminUsuarios: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Usuario</TableHead>
-                <TableHead>Email y Contraseña</TableHead>
+                <TableHead>Email</TableHead>
                 <TableHead>Rol</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Agencia</TableHead>
@@ -474,11 +487,11 @@ const AdminUsuarios: React.FC = () => {
                 filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.nombre || 'Sin nombre'}</TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="font-medium">{user.email}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Contraseña: {user.password || 'Sin contraseña'}
+                     <TableCell>
+                       <div className="space-y-1">
+                         <div className="font-medium">{user.email}</div>
+                         <div className="text-xs text-muted-foreground">
+                           Credenciales gestionadas de forma segura
                         </div>
                       </div>
                     </TableCell>

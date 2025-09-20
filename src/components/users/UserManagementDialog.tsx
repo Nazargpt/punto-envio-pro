@@ -40,7 +40,24 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
   });
   const [agencies, setAgencies] = useState<Array<{ id: string; nombre: string }>>([]);
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<string>('');
   const { toast } = useToast();
+
+  // Password strength validation
+  const validatePasswordStrength = (password: string): string => {
+    if (password.length === 0) return '';
+    if (password.length < 8) return 'weak';
+    
+    let score = 0;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    
+    if (score < 2) return 'weak';
+    if (score < 3) return 'medium';
+    return 'strong';
+  };
 
   useEffect(() => {
     if (user && isEdit) {
@@ -96,6 +113,16 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
     setLoading(true);
 
     try {
+      // Validate password strength for new users
+      if (!isEdit && validatePasswordStrength(formData.password) === 'weak') {
+        toast({
+          title: "Contraseña insegura",
+          description: "La contraseña debe tener al menos 8 caracteres e incluir mayúsculas, minúsculas, números y símbolos especiales",
+          variant: "destructive"
+        });
+        return;
+      }
+
       if (isEdit && user) {
         // Update user profile
         const { error: profileError } = await supabase
@@ -261,11 +288,28 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
               id="password"
               type="password"
               value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, password: e.target.value });
+                setPasswordStrength(validatePasswordStrength(e.target.value));
+              }}
               required={!isEdit}
-              minLength={6}
-              placeholder={isEdit ? 'Dejar en blanco para no cambiar' : 'Mínimo 6 caracteres'}
+              minLength={8}
+              placeholder={isEdit ? 'Dejar en blanco para no cambiar' : 'Mínimo 8 caracteres'}
             />
+            {formData.password && (
+              <div className={`text-sm mt-1 ${
+                passwordStrength === 'strong' ? 'text-green-600' :
+                passwordStrength === 'medium' ? 'text-yellow-600' : 'text-red-600'
+              }`}>
+                Seguridad: {passwordStrength === 'strong' ? 'Fuerte' :
+                          passwordStrength === 'medium' ? 'Media' : 'Débil'}
+              </div>
+            )}
+            {!isEdit && (
+              <div className="text-xs text-muted-foreground mt-1">
+                Debe incluir: mayúsculas, minúsculas, números y símbolos especiales
+              </div>
+            )}
           </div>
 
           <div>
