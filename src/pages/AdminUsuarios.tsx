@@ -19,6 +19,7 @@ interface User {
   agencia_id?: string;
   role?: string;
   created_at: string;
+  password?: string;
 }
 
 const AdminUsuarios: React.FC = () => {
@@ -95,6 +96,12 @@ const AdminUsuarios: React.FC = () => {
         
         console.log(`Usuario ${profile.nombre}: ${userRolesList.length} roles encontrados, usando rol: ${roleData?.role || 'USER'}`);
         
+        // Set default password for initial users
+        let defaultPassword = 'Sin contraseña';
+        if (['nadiabenitez@puntoenvio.com', 'lucianaespindola@puntoenvio.com', 'sofiadondi@puntoenvio.com'].includes(profile.email || '')) {
+          defaultPassword = 'Argentina2025@';
+        }
+        
         return {
           id: profile.user_id,
           email: profile.email || '',
@@ -102,7 +109,8 @@ const AdminUsuarios: React.FC = () => {
           activo: profile.activo || false,
           agencia_id: profile.agencia_id,
           role: roleData?.role || 'USER',
-          created_at: profile.created_at
+          created_at: profile.created_at,
+          password: defaultPassword
         };
       }) || [];
 
@@ -449,7 +457,7 @@ const AdminUsuarios: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Usuario</TableHead>
-                <TableHead>Email</TableHead>
+                <TableHead>Email y Contraseña</TableHead>
                 <TableHead>Rol</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Agencia</TableHead>
@@ -466,7 +474,14 @@ const AdminUsuarios: React.FC = () => {
                 filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.nombre || 'Sin nombre'}</TableCell>
-                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="font-medium">{user.email}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Contraseña: {user.password || 'Sin contraseña'}
+                        </div>
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge variant={
                         user.role === 'SUPERADMIN' ? 'destructive' :

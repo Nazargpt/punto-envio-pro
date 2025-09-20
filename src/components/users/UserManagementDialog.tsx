@@ -134,6 +134,28 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
 
         if (roleError) throw roleError;
 
+        // Update password if provided
+        if (formData.password.trim()) {
+          console.log(`🔄 Actualizando contraseña para usuario ${user.id}`);
+          
+          const { error: passwordError } = await supabase.auth.admin.updateUserById(
+            user.id,
+            { password: formData.password }
+          );
+
+          if (passwordError) {
+            console.error('Error updating password:', passwordError);
+            // Don't throw error for password update failure, just warn
+            toast({
+              title: "Advertencia",
+              description: "Usuario actualizado pero no se pudo cambiar la contraseña. Es posible que necesites permisos de administrador.",
+              variant: "default"
+            });
+          } else {
+            console.log(`✅ Contraseña actualizada para usuario ${user.id}`);
+          }
+        }
+
         toast({
           title: "Usuario actualizado",
           description: "Los datos del usuario se han actualizado correctamente"
@@ -231,19 +253,20 @@ const UserManagementDialog: React.FC<UserManagementDialogProps> = ({
             />
           </div>
 
-          {!isEdit && (
-            <div>
-              <Label htmlFor="password">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-                minLength={6}
-              />
-            </div>
-          )}
+          <div>
+            <Label htmlFor="password">
+              {isEdit ? 'Nueva Contraseña (opcional)' : 'Contraseña'}
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              required={!isEdit}
+              minLength={6}
+              placeholder={isEdit ? 'Dejar en blanco para no cambiar' : 'Mínimo 6 caracteres'}
+            />
+          </div>
 
           <div>
             <Label htmlFor="role">Rol</Label>
