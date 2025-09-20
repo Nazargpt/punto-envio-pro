@@ -6,98 +6,34 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Users, Plus, Search, Truck, MapPin, Phone, Mail, Eye, Edit } from 'lucide-react';
+import { Users, Plus, Search, Truck, MapPin, Phone, Mail, Eye, Edit, Shield } from 'lucide-react';
 import { CrearTransportistaForm } from '@/components/forms/CrearTransportistaForm';
 import { VerPerfilTransportista } from '@/components/forms/VerPerfilTransportista';
 import { EditarTransportistaForm } from '@/components/forms/EditarTransportistaForm';
+import { useTransportistasSecure } from '@/hooks/useTransportistasSecure';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Transportistas: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTransportistaId, setSelectedTransportistaId] = useState<string | null>(null);
   const [dialogType, setDialogType] = useState<'perfil' | 'editar' | null>(null);
+  
+  const { transportistas, loading } = useTransportistasSecure();
+  const { isAdmin, isSuperAdmin } = useAuth();
 
-  const mockTransportistasLocales = [
-    {
-      id: '550e8400-e29b-41d4-a716-446655440000',
-      nombre: 'Juan Carlos Méndez',
-      cuit: '20-12345678-9',
-      telefono: '+54 11 1234-5678',
-      email: 'juan.mendez@email.com',
-      agencia: 'Agencia Central CABA',
-      zonas: ['Palermo', 'Belgrano', 'Núñez'],
-      activo: true,
-      ordenesHoy: 12,
-      ordenesCompletadas: 8
-    },
-    {
-      id: '550e8400-e29b-41d4-a716-446655440001',
-      nombre: 'María Elena Vásquez',
-      cuit: '27-87654321-0',
-      telefono: '+54 351 987-6543',
-      email: 'maria.vasquez@email.com',
-      agencia: 'Agencia Córdoba Norte',
-      zonas: ['Nueva Córdoba', 'Centro', 'Alberdi'],
-      activo: true,
-      ordenesHoy: 8,
-      ordenesCompletadas: 8
-    },
-    {
-      id: '550e8400-e29b-41d4-a716-446655440002',
-      nombre: 'Roberto Silva',
-      cuit: '20-11223344-5',
-      telefono: '+54 341 555-0123',
-      email: 'roberto.silva@email.com',
-      agencia: 'Agencia Rosario',
-      zonas: ['Centro', 'Echesortu', 'Fisherton'],
-      activo: false,
-      ordenesHoy: 0,
-      ordenesCompletadas: 0
-    }
-  ];
-
-  const mockTransportistasLD = [
-    {
-      id: '550e8400-e29b-41d4-a716-446655440003',
-      nombre: 'Transportes del Norte S.A.',
-      cuit: '30-98765432-1',
-      telefono: '+54 11 4567-8901',
-      email: 'info@transportesnorte.com.ar',
-      rutas: ['CABA → Córdoba', 'CABA → Rosario', 'CABA → Santa Fe'],
-      activo: true,
-      capacidad: '15 toneladas',
-      frecuencia: 'Diaria'
-    },
-    {
-      id: '550e8400-e29b-41d4-a716-446655440004',
-      nombre: 'Logística Sur Ltda.',
-      cuit: '33-55667788-9',
-      telefono: '+54 11 2345-6789',
-      email: 'operaciones@logisticasur.com',
-      rutas: ['CABA → Mendoza', 'CABA → San Juan', 'CABA → La Rioja'],
-      activo: true,
-      capacidad: '20 toneladas',
-      frecuencia: '3 veces por semana'
-    },
-    {
-      id: '550e8400-e29b-41d4-a716-446655440005',
-      nombre: 'Expresos Patagonia',
-      cuit: '30-44556677-8',
-      telefono: '+54 11 8765-4321',
-      email: 'contacto@expresospatagonia.com.ar',
-      rutas: ['CABA → Neuquén', 'CABA → Río Gallegos'],
-      activo: false,
-      capacidad: '12 toneladas',
-      frecuencia: 'Semanal'
-    }
-  ];
-
-  const filteredLocales = mockTransportistasLocales.filter(t =>
-    t.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    t.agencia.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter transportistas by search term and type
+  const filteredLocales = transportistas.filter(t =>
+    t.tipo_transportista === 'local' &&
+    t.activo &&
+    (t.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     t.apellido.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const filteredLD = mockTransportistasLD.filter(t =>
-    t.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredLD = transportistas.filter(t =>
+    t.tipo_transportista === 'larga_distancia' &&
+    t.activo &&
+    (t.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     t.apellido.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
   const handleVerPerfil = (transportistaId: string) => {
@@ -145,10 +81,10 @@ const Transportistas: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockTransportistasLocales.filter(t => t.activo).length}
+              {loading ? '...' : filteredLocales.length}
             </div>
             <p className="text-xs text-muted-foreground">
-              de {mockTransportistasLocales.length} totales
+              transportistas locales
             </p>
           </CardContent>
         </Card>
@@ -160,10 +96,10 @@ const Transportistas: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockTransportistasLD.filter(t => t.activo).length}
+              {loading ? '...' : filteredLD.length}
             </div>
             <p className="text-xs text-muted-foreground">
-              empresas activas
+              larga distancia
             </p>
           </CardContent>
         </Card>
@@ -175,9 +111,9 @@ const Transportistas: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockTransportistasLocales.reduce((sum, t) => sum + t.ordenesHoy, 0)}
+              {loading ? '...' : transportistas.length}
             </div>
-            <p className="text-xs text-muted-foreground">asignadas</p>
+            <p className="text-xs text-muted-foreground">total activos</p>
           </CardContent>
         </Card>
 
@@ -233,82 +169,83 @@ const Transportistas: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {filteredLocales.map((transportista) => (
-                  <div key={transportista.id} className="border rounded-lg p-4 hover:bg-muted/50">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-semibold">{transportista.nombre}</h3>
-                        <Badge variant={transportista.activo ? "default" : "secondary"}>
-                          {transportista.activo ? "Activo" : "Inactivo"}
-                        </Badge>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleVerPerfil(transportista.id)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Ver Perfil
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleEditar(transportista.id)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Editar
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">CUIT</p>
-                        <p className="font-medium">{transportista.cuit}</p>
-                      </div>
-                      
-                      <div>
-                        <p className="text-muted-foreground">Contacto</p>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            <span className="text-xs">{transportista.telefono}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            <span className="text-xs">{transportista.email}</span>
-                          </div>
+              {loading ? (
+                <p className="text-center text-muted-foreground">Cargando transportistas...</p>
+              ) : (
+                <div className="space-y-4">
+                  {filteredLocales.map((transportista) => (
+                    <div key={transportista.id} className="border rounded-lg p-4 hover:bg-muted/50">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-semibold">{transportista.nombre} {transportista.apellido}</h3>
+                          <Badge variant={transportista.activo ? "default" : "secondary"}>
+                            {transportista.activo ? "Activo" : "Inactivo"}
+                          </Badge>
+                          {(isAdmin() || isSuperAdmin()) && (
+                            <Badge variant="outline" className="text-xs">
+                              <Shield className="h-3 w-3 mr-1" />
+                              Acceso Seguro
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleVerPerfil(transportista.id)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver Perfil
+                          </Button>
+                          {(isAdmin() || isSuperAdmin()) && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleEditar(transportista.id)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Editar
+                            </Button>
+                          )}
                         </div>
                       </div>
                       
-                      <div>
-                        <p className="text-muted-foreground">Agencia Base</p>
-                        <p className="font-medium">{transportista.agencia}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-muted-foreground">Rendimiento Hoy</p>
-                        <p className="font-medium">
-                          {transportista.ordenesCompletadas}/{transportista.ordenesHoy} órdenes
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-3">
-                      <p className="text-muted-foreground text-sm mb-1">Zonas de cobertura:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {transportista.zonas.map((zona, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {zona}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Tipo</p>
+                          <p className="font-medium capitalize">{transportista.tipo_transportista.replace('_', ' ')}</p>
+                        </div>
+                        
+                        <div>
+                          <p className="text-muted-foreground">Estado</p>
+                          <Badge variant={transportista.activo ? "default" : "secondary"} className="text-xs">
+                            {transportista.activo ? "Disponible" : "No disponible"}
                           </Badge>
-                        ))}
+                        </div>
+
+                        <div>
+                          <p className="text-muted-foreground">Registrado</p>
+                          <p className="font-medium text-xs">
+                            {new Date(transportista.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 text-xs text-muted-foreground">
+                        <Shield className="h-3 w-3 inline mr-1" />
+                        Datos protegidos por políticas de seguridad
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                  
+                  {filteredLocales.length === 0 && !loading && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>No se encontraron transportistas locales</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -322,80 +259,83 @@ const Transportistas: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {filteredLD.map((empresa) => (
-                  <div key={empresa.id} className="border rounded-lg p-4 hover:bg-muted/50">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-semibold">{empresa.nombre}</h3>
-                        <Badge variant={empresa.activo ? "default" : "secondary"}>
-                          {empresa.activo ? "Activo" : "Inactivo"}
-                        </Badge>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleVerPerfil(empresa.id)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Ver Perfil
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleEditar(empresa.id)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Editar
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm mb-3">
-                      <div>
-                        <p className="text-muted-foreground">CUIT</p>
-                        <p className="font-medium">{empresa.cuit}</p>
-                      </div>
-                      
-                      <div>
-                        <p className="text-muted-foreground">Contacto</p>
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            <span className="text-xs">{empresa.telefono}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            <span className="text-xs">{empresa.email}</span>
-                          </div>
+              {loading ? (
+                <p className="text-center text-muted-foreground">Cargando transportistas...</p>
+              ) : (
+                <div className="space-y-4">
+                  {filteredLD.map((transportista) => (
+                    <div key={transportista.id} className="border rounded-lg p-4 hover:bg-muted/50">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-semibold">{transportista.nombre} {transportista.apellido}</h3>
+                          <Badge variant={transportista.activo ? "default" : "secondary"}>
+                            {transportista.activo ? "Activo" : "Inactivo"}
+                          </Badge>
+                          {(isAdmin() || isSuperAdmin()) && (
+                            <Badge variant="outline" className="text-xs">
+                              <Shield className="h-3 w-3 mr-1" />
+                              Acceso Seguro
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleVerPerfil(transportista.id)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver Perfil
+                          </Button>
+                          {(isAdmin() || isSuperAdmin()) && (
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => handleEditar(transportista.id)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Editar
+                            </Button>
+                          )}
                         </div>
                       </div>
                       
-                      <div>
-                        <p className="text-muted-foreground">Capacidad</p>
-                        <p className="font-medium">{empresa.capacidad}</p>
-                      </div>
-
-                      <div>
-                        <p className="text-muted-foreground">Frecuencia</p>
-                        <p className="font-medium">{empresa.frecuencia}</p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="text-muted-foreground text-sm mb-1">Rutas disponibles:</p>
-                      <div className="flex flex-wrap gap-1">
-                        {empresa.rutas.map((ruta, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {ruta}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Tipo</p>
+                          <p className="font-medium capitalize">{transportista.tipo_transportista.replace('_', ' ')}</p>
+                        </div>
+                        
+                        <div>
+                          <p className="text-muted-foreground">Estado</p>
+                          <Badge variant={transportista.activo ? "default" : "secondary"} className="text-xs">
+                            {transportista.activo ? "Disponible" : "No disponible"}
                           </Badge>
-                        ))}
+                        </div>
+
+                        <div>
+                          <p className="text-muted-foreground">Registrado</p>
+                          <p className="font-medium text-xs">
+                            {new Date(transportista.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 text-xs text-muted-foreground">
+                        <Shield className="h-3 w-3 inline mr-1" />
+                        Datos protegidos por políticas de seguridad
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                  
+                  {filteredLD.length === 0 && !loading && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Truck className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                      <p>No se encontraron transportistas de larga distancia</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
