@@ -1357,6 +1357,10 @@ export type Database = {
         Args: { email: string }
         Returns: string
       }
+      mask_nombre: {
+        Args: { nombre: string }
+        Returns: string
+      }
       mask_telefono: {
         Args: { telefono: string }
         Returns: string
