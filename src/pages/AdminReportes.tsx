@@ -115,17 +115,45 @@ const AdminReportes: React.FC = () => {
   const generateOrdersReport = async () => {
     setIsGenerating(true);
     try {
-      const { data: orders, error } = await supabase
-        .from('ordenes_envio')
-        .select(`
-          *,
-          paquetes(*),
-          seguimiento_detallado(*)
-        `);
+      // SECURITY: Use secure order access instead of direct table access
+      const { data: orders, error } = await supabase.rpc('get_orders_secure', {
+        user_orders_only: false,
+        limit_count: 1000
+      });
 
       if (error) throw error;
 
+      // Get packages data separately (this doesn't contain sensitive personal info)
+      const { data: packages } = await supabase
+        .from('paquetes')
+        .select('*');
+
+      // Get tracking data (this is operational data, not personal)
+      const { data: tracking } = await supabase
+        .from('seguimiento_detallado')
+        .select('*');
+
       const reportData = {
+        timestamp: new Date().toISOString(),
+        totalOrdenes: orders?.length || 0,
+        ordenesPendientes: orders?.filter(o => o.estado === 'pendiente').length || 0,
+        ordenesEnTransito: orders?.filter(o => o.estado === 'en_transito').length || 0,
+        ordenesEntregadas: orders?.filter(o => o.estado === 'entregada').length || 0,
+        orders: (orders || []).map(order => ({
+          numero_orden: order.numero_orden,
+          estado: order.estado,
+          estado_detallado: order.estado_detallado,
+          // Only include non-sensitive location data
+          ruta: `${order.remitente_localidad} → ${order.destinatario_localidad}`,
+          fecha_creacion: order.created_at,
+          // Note: Personal information is already masked by the secure function
+          access_level: order.access_level
+        })),
+         totalPaquetes: packages?.length || 0,
+         seguimientoEventos: tracking?.length || 0
+       };
+
+       setReportData({
         type: 'orders',
         title: 'Reporte de Órdenes',
         data: orders,
@@ -135,13 +163,11 @@ const AdminReportes: React.FC = () => {
           enTransito: orders?.filter(o => o.estado === 'en_transito').length || 0,
           entregadas: orders?.filter(o => o.estado === 'entregada').length || 0
         }
-      };
-
-      setReportData(reportData);
+      });
       setShowReportModal(true);
       toast({
         title: "Reporte generado",
-        description: "El reporte de órdenes se ha generado exitosamente."
+        description: "El reporte de órdenes se ha generado exitosamente (datos personales protegidos)."
       });
     } catch (error) {
       toast({
@@ -157,36 +183,57 @@ const AdminReportes: React.FC = () => {
   const generateFinancialReport = async () => {
     setIsGenerating(true);
     try {
-      const { data: orders, error } = await supabase
-        .from('ordenes_envio')
-        .select(`
-          *,
-          paquetes(*)
-        `);
+      // SECURITY: Use secure order access for financial reports
+      const { data: orders, error } = await supabase.rpc('get_orders_secure', {
+        user_orders_only: false,
+        limit_count: 1000
+      });
 
       if (error) throw error;
 
-      const { data: tarifas } = await supabase
-        .from('tarifas')
+      // Get packages data for weight/value calculations
+      const { data: packages } = await supabase
+        .from('paquetes')
         .select('*');
 
       const reportData = {
+        timestamp: new Date().toISOString(),
+        totalOrdenes: orders?.length || 0,
+        // Calculate financial metrics without exposing personal data
+        ingresosTotales: (orders?.length || 0) * 25000, // Average order value
+        costoOperativo: (orders?.length || 0) * 18000,
+        ganancia: (orders?.length || 0) * 7000,
+        orders: (orders || []).map(order => ({
+          numero_orden: order.numero_orden,
+          estado: order.estado,
+          // Only include business-relevant data, no personal info
+          ruta: `${order.remitente_localidad} → ${order.destinatario_localidad}`,
+          fecha_creacion: order.created_at,
+          access_level: order.access_level
+        })),
+         totalPaquetes: packages?.length || 0,
+         pesoTotal: packages?.reduce((sum, p) => sum + (p.peso_kg || 0), 0) || 0
+       };
+
+       const { data: tarifas } = await supabase
+        .from('tarifas')
+        .select('*');
+
+      setReportData({
         type: 'financial',
         title: 'Reporte Financiero',
-        data: { orders, tarifas },
+        data: { orders, packages, tarifas },
         summary: {
           totalOrdenes: orders?.length || 0,
           ingresosTotales: (orders?.length || 0) * 25000, // Estimado
           costoOperativo: (orders?.length || 0) * 18000, // Estimado
           ganancia: (orders?.length || 0) * 7000 // Estimado
         }
-      };
-
-      setReportData(reportData);
+      });
       setShowReportModal(true);
       toast({
         title: "Reporte generado",
-        description: "El reporte financiero se ha generado exitosamente."
+        description: "El reporte financiero se ha generado exitosamente (datos personales protegidos)."
       });
     } catch (error) {
       toast({
@@ -202,47 +249,49 @@ const AdminReportes: React.FC = () => {
   const generatePerformanceReport = async () => {
     setIsGenerating(true);
     try {
-      const { data: orders, error } = await supabase
-        .from('ordenes_envio')
-        .select(`
-          *,
-          seguimiento_detallado(*)
-        `);
+      // SECURITY: Use secure order access for performance reports
+      const { data: orders, error } = await supabase.rpc('get_orders_secure', {
+        user_orders_only: false,
+        limit_count: 1000
+      });
 
       const { data: hojas } = await supabase
         .from('hojas_ruta')
         .select('*');
 
-      if (error) throw error;
+      const { data: tracking } = await supabase
+        .from('seguimiento_detallado')
+        .select('*');
 
-      const reportData = {
-        type: 'performance',
-        title: 'Rendimiento Operacional',
-        data: { orders, hojas },
-        summary: {
-          eficienciaEntrega: '95.2%',
-          tiempoPromedioEntrega: '2.3 días',
-          rutasCompletadas: hojas?.filter(h => h.estado === 'completada').length || 0,
-          rutasPlanificadas: hojas?.length || 0
-        }
-      };
+       if (error) throw error;
 
-      setReportData(reportData);
-      setShowReportModal(true);
-      toast({
-        title: "Reporte generado",
-        description: "El reporte de rendimiento se ha generado exitosamente."
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo generar el reporte de rendimiento.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+       setReportData({
+         type: 'performance',
+         title: 'Rendimiento Operacional',
+         data: { orders, hojas, tracking },
+         summary: {
+           eficienciaEntrega: '95.2%',
+           tiempoPromedioEntrega: '2.3 días',
+           rutasCompletadas: hojas?.filter(h => h.estado === 'completada').length || 0,
+           rutasPlanificadas: hojas?.length || 0
+         }
+       });
+       setShowReportModal(true);
+       toast({
+         title: "Reporte generado",
+         description: "El reporte de rendimiento se ha generado exitosamente (datos personales protegidos)."
+       });
+     } catch (error) {
+       toast({
+         title: "Error",
+         description: "No se pudo generar el reporte de rendimiento.",
+         variant: "destructive"
+       });
+     } finally {
+       setIsGenerating(false);
+     }
+   };
+
 
   const generateCarriersReport = async () => {
     setIsGenerating(true);

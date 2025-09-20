@@ -1255,6 +1255,35 @@ export type Database = {
           remitente_nombre_publico: string
         }[]
       }
+      get_orders_secure: {
+        Args: { limit_count?: number; user_orders_only?: boolean }
+        Returns: {
+          access_level: string
+          agencia_destino_id: string
+          agencia_origen_id: string
+          created_at: string
+          destinatario_documento_masked: string
+          destinatario_domicilio_masked: string
+          destinatario_localidad: string
+          destinatario_nombre_masked: string
+          destinatario_provincia: string
+          estado: string
+          estado_detallado: string
+          fecha_entrega: string
+          fecha_recoleccion: string
+          id: string
+          numero_orden: string
+          remitente_documento_masked: string
+          remitente_domicilio_masked: string
+          remitente_localidad: string
+          remitente_nombre_masked: string
+          remitente_provincia: string
+          tipo_entrega: string
+          tipo_recoleccion: string
+          updated_at: string
+          usuario_creacion_id: string
+        }[]
+      }
       get_route_stops_for_agency: {
         Args: Record<PropertyKey, never>
         Returns: {

@@ -116,17 +116,56 @@ const AdminSecureOrderAccess: React.FC = () => {
 
     setLoadingDetails(true);
     try {
-      const { data, error } = await supabase
+      // First, get the order ID by number
+      const { data: orderSearch, error: searchError } = await supabase
         .from('ordenes_envio')
-        .select('*')
+        .select('id')
         .eq('numero_orden', orderNumber)
-        .single();
+        .maybeSingle();
+
+      if (searchError) {
+        throw searchError;
+      }
+
+      if (!orderSearch) {
+        throw new Error('Orden no encontrada');
+      }
+
+      // SECURITY: Use secure order access with data masking
+      const { data, error } = await supabase.rpc('get_orden_with_masking', {
+        orden_id: orderSearch.id
+      });
 
       if (error) {
         throw error;
       }
 
-      setSelectedOrder(data);
+      // Get the first result from the function call
+      const orderData = data?.[0];
+      
+      if (!orderData) {
+        throw new Error('No se pudieron obtener los detalles de la orden');
+      }
+
+      // Map the masked data to the expected interface
+      const mappedOrder: FullOrderDetails = {
+        id: orderData.id,
+        numero_orden: orderData.numero_orden,
+        estado: orderData.estado,
+        remitente_nombre: orderData.remitente_nombre,
+        remitente_documento: orderData.remitente_documento_masked,
+        remitente_domicilio: orderData.remitente_domicilio_masked,
+        remitente_localidad: orderData.remitente_localidad,
+        remitente_provincia: orderData.remitente_provincia,
+        destinatario_nombre: orderData.destinatario_nombre,
+        destinatario_documento: orderData.destinatario_documento_masked,
+        destinatario_domicilio: orderData.destinatario_domicilio_masked,
+        destinatario_localidad: orderData.destinatario_localidad,
+        destinatario_provincia: orderData.destinatario_provincia,
+        created_at: orderData.created_at
+      };
+
+      setSelectedOrder(mappedOrder);
       
       // Log access to sensitive data
       await logDataAccess(orderNumber, 'view_full_details', [
@@ -138,7 +177,7 @@ const AdminSecureOrderAccess: React.FC = () => {
 
       toast({
         title: "Detalles cargados",
-        description: "Acceso a datos sensibles registrado en auditoría"
+        description: "Acceso a datos sensibles registrado en auditoría (datos enmascarados por seguridad)"
       });
     } catch (error) {
       console.error('Error loading order details:', error);

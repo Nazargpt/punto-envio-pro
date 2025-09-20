@@ -86,27 +86,48 @@ export const OrdenManagementDialog = ({
   const cargarOrdenesDisponibles = async () => {
     setLoading(true);
     try {
-      // Obtener órdenes que no están asignadas a ninguna hoja de ruta del mismo tipo
-      const { data, error } = await supabase
-        .from('ordenes_envio')
-        .select('*')
-        .eq('estado', 'pendiente')
-        .not('id', 'in', `(${hojaRuta.ordenes_hoja_ruta.map(ohr => `"${ohr.orden_envio_id}"`).join(',')})`);
+      // SECURITY: Use secure function for orders instead of direct table access
+      const { data, error } = await supabase.rpc('get_orders_secure', {
+        user_orders_only: false,
+        limit_count: 100
+      });
 
       if (error) throw error;
-      setOrdenesDisponibles(data || []);
+
+      // Filter out orders that are already in this roadmap and match the pending status
+      const filteredOrders = (data || []).filter(order => 
+        order.estado === 'pendiente' &&
+        !hojaRuta.ordenes_hoja_ruta.some(ohr => ohr.orden_envio_id === order.id)
+      );
+
+      // Transform the secure data to the format expected by the component
+      const transformedOrders = filteredOrders.map(order => ({
+        id: order.id,
+        numero_orden: order.numero_orden,
+        estado: order.estado,
+        estado_detallado: order.estado_detallado || 'pendiente',
+        // Use masked names for display
+        remitente_nombre: order.remitente_nombre_masked,
+        destinatario_nombre: order.destinatario_nombre_masked,
+        remitente_localidad: order.remitente_localidad,
+        destinatario_localidad: order.destinatario_localidad,
+        remitente_provincia: order.remitente_provincia,
+        destinatario_provincia: order.destinatario_provincia,
+        agencia_origen_id: order.agencia_origen_id,
+        agencia_destino_id: order.agencia_destino_id,
+        fecha_recoleccion: order.fecha_recoleccion,
+        fecha_entrega: order.fecha_entrega,
+        created_at: order.created_at
+      }));
+
+      setOrdenesDisponibles(transformedOrders);
     } catch (error) {
-      console.error('Error cargando órdenes disponibles:', error);
-      toast({
-        title: "Error",
-        description: "No se pudieron cargar las órdenes disponibles",
-        variant: "destructive"
-      });
+      console.error('Error loading available orders:', error);
+      setOrdenesDisponibles([]);
     } finally {
       setLoading(false);
     }
   };
-
   const filteredOrdenes = ordenesDisponibles.filter(orden =>
     orden.numero_orden.toLowerCase().includes(searchTerm.toLowerCase()) ||
     orden.remitente_nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
