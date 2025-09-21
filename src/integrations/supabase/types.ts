@@ -64,6 +64,104 @@ export type Database = {
           },
         ]
       }
+      api_keys: {
+        Row: {
+          api_key: string
+          company_name: string | null
+          contact_email: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          key_name: string
+          last_used_at: string | null
+          permissions: Json
+          rate_limit_per_minute: number
+          secret_hash: string
+          updated_at: string
+        }
+        Insert: {
+          api_key: string
+          company_name?: string | null
+          contact_email?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_name: string
+          last_used_at?: string | null
+          permissions?: Json
+          rate_limit_per_minute?: number
+          secret_hash: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string
+          company_name?: string | null
+          contact_email?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          key_name?: string
+          last_used_at?: string | null
+          permissions?: Json
+          rate_limit_per_minute?: number
+          secret_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      api_usage_logs: {
+        Row: {
+          api_key_id: string | null
+          created_at: string
+          endpoint: string
+          error_message: string | null
+          id: string
+          method: string
+          request_body_size: number | null
+          request_ip: unknown | null
+          response_time_ms: number | null
+          status_code: number
+          user_agent: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string
+          endpoint: string
+          error_message?: string | null
+          id?: string
+          method: string
+          request_body_size?: number | null
+          request_ip?: unknown | null
+          response_time_ms?: number | null
+          status_code: number
+          user_agent?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string
+          endpoint?: string
+          error_message?: string | null
+          id?: string
+          method?: string
+          request_body_size?: number | null
+          request_ip?: unknown | null
+          response_time_ms?: number | null
+          status_code?: number
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_usage_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hoja_ruta_fotos: {
         Row: {
           created_at: string
@@ -1151,6 +1249,100 @@ export type Database = {
           },
         ]
       }
+      webhook_configurations: {
+        Row: {
+          api_key_id: string | null
+          created_at: string
+          events: string[]
+          id: string
+          is_active: boolean
+          max_retries: number
+          retry_delay_seconds: number
+          secret_token: string
+          updated_at: string
+          webhook_url: string
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          max_retries?: number
+          retry_delay_seconds?: number
+          secret_token: string
+          updated_at?: string
+          webhook_url: string
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          max_retries?: number
+          retry_delay_seconds?: number
+          secret_token?: string
+          updated_at?: string
+          webhook_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_configurations_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_delivery_logs: {
+        Row: {
+          attempt_number: number
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          event_type: string
+          id: string
+          payload: Json
+          response_body: string | null
+          status_code: number | null
+          webhook_config_id: string | null
+        }
+        Insert: {
+          attempt_number?: number
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          event_type: string
+          id?: string
+          payload: Json
+          response_body?: string | null
+          status_code?: number | null
+          webhook_config_id?: string | null
+        }
+        Update: {
+          attempt_number?: number
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          event_type?: string
+          id?: string
+          payload?: Json
+          response_body?: string | null
+          status_code?: number | null
+          webhook_config_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_delivery_logs_webhook_config_id_fkey"
+            columns: ["webhook_config_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_configurations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zonas_tarifarias: {
         Row: {
           activo: boolean
@@ -1204,6 +1396,10 @@ export type Database = {
       generar_hojas_ruta_agencia: {
         Args: { p_agencia_id: string }
         Returns: Json
+      }
+      generate_api_orden_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       generate_hoja_ruta_codigo: {
         Args: Record<PropertyKey, never>
@@ -1413,6 +1609,16 @@ export type Database = {
           numero_orden: string
           remitente_localidad: string
           remitente_nombre_parcial: string
+        }[]
+      }
+      validate_api_key: {
+        Args: { provided_key: string }
+        Returns: {
+          api_key_id: string
+          is_valid: boolean
+          key_name: string
+          permissions: Json
+          rate_limit_per_minute: number
         }[]
       }
     }

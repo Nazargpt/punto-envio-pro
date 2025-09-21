@@ -1,1 +1,13 @@
 project_id = "zyowxsfzfuunjlufxqik"
+
+[functions.create-shipment]
+verify_jwt = false
+
+[functions.tracking]
+verify_jwt = false
+
+[functions.quotes]
+verify_jwt = false
+
+[functions.webhooks]
+verify_jwt = false
